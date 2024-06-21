@@ -1,0 +1,140 @@
+import {
+  HttpClient,
+  HttpErrorResponse,
+  HttpResponse,
+} from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { BehaviorSubject, finalize, take } from 'rxjs';
+import { AuthState } from '../models/auth-state.model';
+import { JwtHelperService } from '@auth0/angular-jwt';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthService {
+  private httpClient = inject(HttpClient);
+  private baseUrl = environment.API_BASE_URL + 'auth';
+  private authState$ = new BehaviorSubject<AuthState>({ status: 'pending' });
+
+  constructor() {
+    const authState = this.authState$.getValue();
+    if (localStorage.getItem('currentUser')) {
+      authState.user = JSON.parse(localStorage.getItem('currentUser')!);
+    }
+
+    if (localStorage.getItem('token')) {
+      authState.token = localStorage.getItem('token')!;
+    }
+
+    this.authState$.next(authState);
+  }
+
+  loginWithPassword(email: string, password: string) {
+    return this.httpClient
+      .post(this.baseUrl + '/login', { email, password })
+      .pipe(take(1))
+      .subscribe({
+        next: (v: any) => {
+          console.log(v);
+          localStorage.setItem('token', v.token);
+          this.setCurrentUser(v.token);
+          this.setStatus('success');
+        },
+        error: (e: HttpErrorResponse) => {
+          console.log(e);
+          this.setStatus('error', e.error?.detail || e.message);
+        },
+      });
+  }
+
+  loginWithToken(token: string) {
+    this.setStatus('loading');
+    return this.httpClient
+      .post(this.baseUrl + '/social', { token })
+      .pipe(take(1))
+      .subscribe({
+        next: (v: any) => {
+          console.log(v);
+          localStorage.setItem('token', v.token);
+          this.setCurrentUser(token);
+          this.setStatus('success');
+        },
+        error: (e: HttpErrorResponse) => {
+          console.log(e);
+          this.setStatus('error', e.error?.detail || e.message);
+        },
+      });
+  }
+
+  register(email: string, name: string, password: string) {
+    this.setStatus('loading');
+    return this.httpClient
+      .post(this.baseUrl + '/register', { email, firstName: name, password })
+      .pipe(take(1))
+      .subscribe({
+        next: (v: any) => {
+          console.log(v);
+          localStorage.setItem('token', v.token);
+          this.setCurrentUser(v.token);
+          this.setStatus('success');
+        },
+        error: (e: HttpErrorResponse) => {
+          console.log(e);
+          const errors = this.decodeErrors(e);
+          this.setStatus('error', errors);
+        },
+      });
+  }
+
+  get authState() {
+    return this.authState$.asObservable();
+  }
+
+  get authStateValue() {
+    return this.authState$.value;
+  }
+
+  private setCurrentUser(token: string) {
+    if (token) {
+      const helper = new JwtHelperService();
+      const decodedToken = helper.decodeToken(token);
+      this.authState$.next({
+        ...this.authState$.value,
+        token,
+        user: decodedToken,
+      });
+    } else {
+      this.authState$.next({ ...this.authState$.value, token, user: null });
+    }
+  }
+
+  private setStatus(
+    status: 'loading' | 'success' | 'error',
+    errors?: string[]
+  ) {
+    this.authState$.next({ ...this.authState$.value, status, errors });
+  }
+
+  private decodeErrors(errorResponse: HttpErrorResponse) {
+    if (errorResponse.error.detail) {
+      return [errorResponse.error.detail];
+    }
+
+    // if errorResponse.error.errors is type of object
+    if (errorResponse.error.errors instanceof Object) {
+      const errors: string[] = [];
+      // loop through the object keys
+      Object.keys(errorResponse.error.errors).forEach((key) => {
+        // loop through the array of errors
+        errorResponse.error.errors[key].forEach((error: string) => {
+          errors.push(error);
+        });
+      });
+
+      return errors;
+    }
+
+    return [errorResponse.message];
+  }
+}
