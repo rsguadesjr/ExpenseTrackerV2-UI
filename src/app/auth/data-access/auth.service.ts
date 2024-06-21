@@ -15,16 +15,24 @@ import { JwtHelperService } from '@auth0/angular-jwt';
 export class AuthService {
   private httpClient = inject(HttpClient);
   private baseUrl = environment.API_BASE_URL + 'auth';
+  private jwtHelperService = inject(JwtHelperService);
+
   private authState$ = new BehaviorSubject<AuthState>({ status: 'pending' });
 
   constructor() {
     const authState = this.authState$.getValue();
-    if (localStorage.getItem('currentUser')) {
-      authState.user = JSON.parse(localStorage.getItem('currentUser')!);
-    }
-
     if (localStorage.getItem('token')) {
-      authState.token = localStorage.getItem('token')!;
+      const token = localStorage.getItem('token')! as string;
+      try {
+        const decodedToken = this.jwtHelperService.decodeToken(token);
+        const isTokenExpired = this.jwtHelperService.isTokenExpired(token);
+        if (decodedToken && !isTokenExpired) {
+          authState.token = token;
+          authState.user = decodedToken;
+        }
+      } catch (e) {
+        console.log('Error decoding token', e);
+      }
     }
 
     this.authState$.next(authState);
@@ -97,8 +105,7 @@ export class AuthService {
 
   private setCurrentUser(token: string) {
     if (token) {
-      const helper = new JwtHelperService();
-      const decodedToken = helper.decodeToken(token);
+      const decodedToken = this.jwtHelperService.decodeToken(token);
       this.authState$.next({
         ...this.authState$.value,
         token,

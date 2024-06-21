@@ -54,7 +54,10 @@ export class LoginComponent {
       .subscribe((authState) => {
         console.log(authState);
         if (authState.status === 'success') {
-          this.router.navigate(['/']);
+          const returnUrl = this.router.parseUrl(this.router.url).queryParams[
+            'returnUrl'
+          ];
+          this.router.navigate([returnUrl || '/']);
         }
       });
   }
