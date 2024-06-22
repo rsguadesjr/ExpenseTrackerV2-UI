@@ -1,13 +1,10 @@
-import {
-  HttpClient,
-  HttpErrorResponse,
-  HttpResponse,
-} from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { BehaviorSubject, finalize, take } from 'rxjs';
+import { BehaviorSubject, take } from 'rxjs';
 import { AuthState } from '../models/auth-state.model';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { Auth } from '@angular/fire/auth';
 
 @Injectable({
   providedIn: 'root',
@@ -16,6 +13,7 @@ export class AuthService {
   private httpClient = inject(HttpClient);
   private baseUrl = environment.API_BASE_URL + 'auth';
   private jwtHelperService = inject(JwtHelperService);
+  private firebaseAuth = inject(Auth);
 
   private authState$ = new BehaviorSubject<AuthState>({ status: 'pending' });
 
@@ -56,21 +54,27 @@ export class AuthService {
       });
   }
 
-  loginWithToken(token: string) {
+  loginWithToken(data: { token: string; provider: string }) {
     this.setStatus('loading');
     return this.httpClient
-      .post(this.baseUrl + '/social', { token })
+      .post(this.baseUrl + '/social', data)
       .pipe(take(1))
       .subscribe({
-        next: (v: any) => {
-          console.log(v);
-          localStorage.setItem('token', v.token);
-          this.setCurrentUser(token);
-          this.setStatus('success');
+        next: async () => {
+          // get refreshed token
+          const token = await this.firebaseAuth.currentUser?.getIdToken(true);
+          if (token) {
+            localStorage.setItem('token', token);
+            this.setCurrentUser(token);
+            this.setStatus('success');
+          } else {
+            this.firebaseAuth.signOut();
+          }
         },
         error: (e: HttpErrorResponse) => {
           console.log(e);
           this.setStatus('error', e.error?.detail || e.message);
+          this.firebaseAuth.signOut();
         },
       });
   }
@@ -82,7 +86,6 @@ export class AuthService {
       .pipe(take(1))
       .subscribe({
         next: (v: any) => {
-          console.log(v);
           localStorage.setItem('token', v.token);
           this.setCurrentUser(v.token);
           this.setStatus('success');

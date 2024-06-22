@@ -8,8 +8,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { AuthService } from '../../data-access/auth.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MessagesModule } from 'primeng/messages';
-import { Message } from 'primeng/api';
 import { map } from 'rxjs';
+import { Auth, GoogleAuthProvider, signInWithPopup } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-login',
@@ -28,6 +28,7 @@ import { map } from 'rxjs';
 export class LoginComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
+  private firebaseAuth = inject(Auth);
 
   authState$ = this.authService.authState;
   errorMessages$ = this.authState$.pipe(
@@ -52,7 +53,6 @@ export class LoginComponent {
     this.authService.authState
       .pipe(takeUntilDestroyed())
       .subscribe((authState) => {
-        console.log(authState);
         if (authState.status === 'success') {
           const returnUrl = this.router.parseUrl(this.router.url).queryParams[
             'returnUrl'
@@ -68,6 +68,19 @@ export class LoginComponent {
         this.loginForm.value.email!,
         this.loginForm.value.password!
       );
+    }
+  }
+
+  async googleLogin() {
+    try {
+      var provider = new GoogleAuthProvider();
+      provider.addScope('profile');
+      const result = await signInWithPopup(this.firebaseAuth, provider);
+      const token = await result?.user?.getIdToken();
+
+      this.authService.loginWithToken({ token, provider: 'google' });
+    } catch (e) {
+      console.log(e);
     }
   }
 }
