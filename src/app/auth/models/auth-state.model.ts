@@ -1,5 +1,5 @@
 export interface AuthState {
-  status: 'pending' | 'loading' | 'success' | 'error';
+  status: 'idle' | 'loading' | 'success' | 'error';
   errors?: string[];
   user?: any;
   token?: string;

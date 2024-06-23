@@ -30,4 +30,22 @@ export const routes: Routes = [
         (m) => m.RegisterComponent
       ),
   },
+  {
+    path: 'forgot-password',
+    data: { title: 'forgot-password' },
+    canActivate: [authLoggedInGuard],
+    loadComponent: () =>
+      import('./auth/feature/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent
+      ),
+  },
+  {
+    path: 'email-verification',
+    data: { title: 'email-verification' },
+    canActivate: [authLoggedInGuard],
+    loadComponent: () =>
+      import(
+        './auth/feature/email-verification/email-verification.component'
+      ).then((m) => m.EmailVerificationComponent),
+  },
 ];

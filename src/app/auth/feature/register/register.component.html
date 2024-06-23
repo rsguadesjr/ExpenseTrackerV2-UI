@@ -1,12 +1,12 @@
 <div class="flex flex-wrap justify-content-center align-items-center w-full min-h-screen">
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form gap-4 border-1 pt-2 pb-6 px-6 border-round "
-    *ngIf="authState$ | async; let authState">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()"
+    class="auth-form gap-4 border-1 pt-2 pb-6 px-6 border-round ">
 
     <span class="text-center">
       <p class="text-2xl">Expense Tracker</p>
     </span>
 
-    <p-messages *ngIf="errorMessages$ | async; let errorMessages" [value]="errorMessages" [enableService]="false" />
+    <p-messages [value]="errorMessages" [enableService]="false" [closable]="true" />
 
     <div class="flex flex-column gap-2">
       <label for="name">Name</label>
@@ -46,7 +46,7 @@
       </ng-container>
     </div>
     <div class="mt-4 p-fluid">
-      @if (authState.status === 'loading') {
+      @if (status === 'loading') {
       <button type="submit" class="p-button p-button-success" pButton pRipple>
         <span class="flex align-items-center justify-content-center w-full gap-2">
           <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem"></i>

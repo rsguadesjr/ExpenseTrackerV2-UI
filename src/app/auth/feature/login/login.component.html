@@ -1,12 +1,11 @@
 <div class="flex flex-wrap justify-content-center align-items-center w-full min-h-screen">
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form gap-4 border-1 pt-2 pb-6 px-6 border-round "
-    *ngIf="authState$ | async; let authState">
+  <form [formGroup]="loginForm" (ngSubmit)="loginWithPassword()" class="auth-form gap-2 border-1 p-4 border-round ">
 
     <span class="text-center">
       <p class="text-2xl">Expense Tracker</p>
     </span>
 
-    <p-messages *ngIf="errorMessages$ | async; let errorMessages" [value]="errorMessages" [enableService]="false" />
+    <p-messages [value]="errorMessages" [enableService]="false" />
 
     <div class="flex flex-column gap-2">
       <label for="email">Email</label>
@@ -20,9 +19,9 @@
         </small>
       </ng-container>
     </div>
-    <div class="flex flex-column gap-2">
+    <div class="p-fluid flex flex-column gap-2">
       <label for="password">Password</label>
-      <input type="password" id="password" formControlName="password" pInputText class="p-inputtext" />
+      <p-password type="password" id="password" formControlName="password" [feedback]="false" [toggleMask]="true" />
       <ng-container *ngIf="loginForm.get('password')?.errors && loginForm.get('password')?.touched">
         <small class="password-errors" class="text-red-500" *ngIf="loginForm.get('password')?.errors?.['required']">
           Password is required
@@ -30,7 +29,7 @@
       </ng-container>
     </div>
     <div class="mt-4 p-fluid">
-      @if (authState.status === 'loading') {
+      @if (status === 'loading') {
       <button type="submit" class="p-button p-button-success" pButton pRipple>
         <span class="flex align-items-center justify-content-center w-full gap-2">
           <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem"></i>
@@ -42,9 +41,15 @@
       <button type="submit" class="p-button p-button-success" label="Sign in" pButton pRipple></button>
       }
     </div>
-    <button type="button" (click)="googleLogin()" class="p-button p-button-success">Sign in with Google</button>
-    <div class=" mt-4">
-      <span>not yet registered? <a routerLink="/register">Register</a></span>
+    <div class="flex flex-row mt-4 justify-content-between">
+      <a routerLink="/forgot-password">Forgot Password?</a>
+      <span>Don't have an account? <a routerLink="/register">Register</a></span>
+    </div>
+
+    <p-divider align="center" type="dashed"></p-divider>
+    <span class="text-center">or you can sign in with</span>
+    <div class="flex justify-content-center m-2">
+      <p-button icon="pi pi-google" [rounded]="true" severity="secondary" (click)="loginWithGoogle()" />
     </div>
   </form>
 </div>
