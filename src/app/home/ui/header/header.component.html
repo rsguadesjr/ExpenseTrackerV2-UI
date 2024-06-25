@@ -1,0 +1,22 @@
+<p-toolbar styleClass="bg-gray-900 shadow-2 p-3 border-noround border-none" *ngIf="authState$ | async; let authState">
+  <div class="p-toolbar-group-start">
+    <p-button icon="pi pi-bars" class="mr-2" [rounded]="true" [text]="true" size="large"
+      (click)="uiService.sidebarVisible = !uiService.sidebarVisible" />
+    <a routerLink="/" class="p-link no-underline text-xl"> Expense Tracker
+    </a>
+  </div>
+  <ng-template pTemplate="end">
+    <!-- <span class="mr-2"><b>{{ authState.user?.name }}</b></span> -->
+    <div class="flex align-items-center gap-2">
+      @if (authState.user?.picture){
+      <p-avatar [image]="authState.user.picture" shape="circle" (click)="avatarMenu.toggle($event)"
+        styleClass="cursor-pointer" size="large" />
+      }
+      @else {
+      <p-avatar icon="pi pi-user" styleClass="mr-2" [style]="{ 'background-color': '#dee9fc', color: '#1a2551' }"
+        shape="circle" (click)="avatarMenu.toggle($event)" styleClass="cursor-pointer" size="large" />
+      }
+    </div>
+    <p-tieredMenu #avatarMenu [model]="items" [popup]="true"></p-tieredMenu>
+  </ng-template>
+</p-toolbar>

@@ -1,13 +1,14 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './auth/data-access/auth.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { HeaderComponent } from './home/ui/header/header.component';
+import { SidebarComponent } from './home/ui/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [CommonModule, RouterOutlet, HeaderComponent, SidebarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
@@ -19,11 +20,4 @@ export class AppComponent {
   isAuthenticated$ = this.authService.isAuthenticated$;
 
   constructor() {}
-
-  async signOut() {
-    await this.authService.signOut();
-    this.router.navigate(['/login'], {
-      queryParams: { returnUrl: this.router.url },
-    });
-  }
 }
