@@ -7,6 +7,7 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { Message } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { MessagesModule } from 'primeng/messages';
@@ -14,7 +15,13 @@ import { MessagesModule } from 'primeng/messages';
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MessagesModule, ButtonModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MessagesModule,
+    ButtonModule,
+    RouterModule,
+  ],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',
 })
@@ -28,9 +35,7 @@ export class ForgotPasswordComponent {
 
   messages: Message[] = [];
 
-  ngOnInit() {
-    console.log('window.location.origin', window.location.origin);
-  }
+  ngOnInit() {}
 
   async onSubmit() {
     this.form.markAllAsTouched();

@@ -8,10 +8,4 @@ import { Auth } from '@angular/fire/auth';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent {
-  private firebaseAuth = inject(Auth);
-
-  async logout() {
-    await this.firebaseAuth.signOut();
-  }
-}
+export class DashboardComponent {}

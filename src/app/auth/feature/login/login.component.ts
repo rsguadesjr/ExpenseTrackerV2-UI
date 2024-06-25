@@ -8,10 +8,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { AuthService } from '../../data-access/auth.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MessagesModule } from 'primeng/messages';
-import { map } from 'rxjs';
+import { BehaviorSubject, combineLatestWith, map } from 'rxjs';
 import {
   Auth,
   GoogleAuthProvider,
+  OAuthProvider,
+  getAdditionalUserInfo,
   sendEmailVerification,
   signInWithCredential,
   signInWithCustomToken,
@@ -39,10 +41,10 @@ import { Message } from 'primeng/api';
   styleUrl: './login.component.scss',
 })
 export class LoginComponent {
+  private authService = inject(AuthService);
   private router = inject(Router);
   private firebaseAuth = inject(Auth);
 
-  errorMessages: Message[] = [];
   status = 'idle';
 
   loginForm = new FormGroup({
@@ -50,11 +52,32 @@ export class LoginComponent {
     password: new FormControl('', [Validators.required]),
   });
 
-  constructor() {}
+  private passwordLoginErrors$ = new BehaviorSubject<string[]>([]);
+
+  errorMessages$ = this.authService.authState.pipe(
+    map((authState) => authState.errors || []),
+    combineLatestWith(this.passwordLoginErrors$),
+    map(([authStateErrors, passwordLoginErrors]) =>
+      [...authStateErrors, ...passwordLoginErrors].map(
+        (error) => ({ severity: 'error', detail: error } as Message)
+      )
+    ),
+    takeUntilDestroyed()
+  );
+
+  constructor() {
+    this.authService.isAuthenticated$.pipe(takeUntilDestroyed()).subscribe({
+      next: (isAuthenticated) => {
+        if (isAuthenticated) {
+          this.router.navigate(['/']);
+        }
+      },
+    });
+  }
 
   async loginWithPassword() {
     this.loginForm.markAllAsTouched();
-    this.errorMessages = [];
+    this.passwordLoginErrors$.next([]);
 
     if (!this.loginForm.valid || this.status === 'loading') {
       return;
@@ -67,25 +90,28 @@ export class LoginComponent {
         this.loginForm.value.password!
       );
 
-      console.log('[DEBUG]', result);
-
       if (!result.user.emailVerified) {
         this.router.navigate(['/email-verification']);
         return;
       }
+
+      // validate token to backend api
+      const idToken = await result.user.getIdToken();
+      this.authService.login({
+        idToken: idToken,
+        provider: 'password',
+        email: result.user.email as string,
+        name: result.user.displayName as string,
+      });
     } catch (e: any) {
       if (
         e.code === 'auth/invalid-credential' ||
         e.code === 'auth/wrong-password' ||
         e.code === 'auth/user-not-found'
       ) {
-        this.errorMessages = [
-          { severity: 'error', detail: 'Invalid email or password' },
-        ];
+        this.passwordLoginErrors$.next(['Invalid email or password']);
       } else {
-        this.errorMessages = [
-          { severity: 'error', detail: 'Something went wrong' },
-        ];
+        this.passwordLoginErrors$.next(['Something went wrong']);
       }
     }
   }
@@ -95,7 +121,16 @@ export class LoginComponent {
 
     try {
       var provider = new GoogleAuthProvider();
-      await signInWithPopup(this.firebaseAuth, provider);
+      const result = await signInWithPopup(this.firebaseAuth, provider);
+      const idToken = await result.user.getIdToken();
+      const IdTokenResult = await result.user.getIdTokenResult();
+
+      this.authService.login({
+        idToken: idToken,
+        provider: 'google',
+        email: result.user.email as string,
+        name: result.user.displayName as string,
+      });
     } catch (e) {
       console.log(e);
     }

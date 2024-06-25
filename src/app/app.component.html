@@ -1,1 +1,5 @@
+<div *ngIf="isAuthenticated$ | async">
+  <p>This is the header, will only be visible once the user is authenticated properly</p>
+  <button (click)="signOut()">Sign Out</button>
+</div>
 <router-outlet></router-outlet>

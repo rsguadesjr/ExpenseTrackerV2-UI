@@ -11,12 +11,4 @@ import { TabViewModule } from 'primeng/tabview';
   templateUrl: './auth-form.component.html',
   styleUrl: './auth-form.component.scss',
 })
-export class AuthFormComponent {
-  activatedRoute = inject(ActivatedRoute);
-
-  ngOnInit() {
-    console.log(this.activatedRoute.snapshot);
-    console.log(this.activatedRoute.data);
-    this.activatedRoute.data.subscribe((data) => console.log(data));
-  }
-}
+export class AuthFormComponent {}

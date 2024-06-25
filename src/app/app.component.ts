@@ -2,28 +2,28 @@ import { Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './auth/data-access/auth.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  title = 'ExpenseTracker';
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  constructor() {
-    this.authService.isAuthenticated$
-      .pipe(takeUntilDestroyed())
-      .subscribe((isAuthenticated) => {
-        if (isAuthenticated) {
-          this.router.navigate(['/dashboard']);
-        } else {
-          this.router.navigate(['/login']);
-        }
-      });
+  title = 'ExpenseTracker';
+  isAuthenticated$ = this.authService.isAuthenticated$;
+
+  constructor() {}
+
+  async signOut() {
+    await this.authService.signOut();
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.router.url },
+    });
   }
 }

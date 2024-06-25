@@ -1,53 +1,41 @@
 <div class="flex flex-wrap justify-content-center align-items-center w-full min-h-screen">
-  @if (status === 'success') {
-  <div class="auth-form gap-2 border-1 p-4 border-round ">
+  <div class="auth-form border-round bg-black-alpha-40 ">
     <span class="text-center">
-      <p class="text-2xl">Expense Tracker</p>
+      <p class="text-4xl">Verify Email</p>
     </span>
-    <div class="p-message p-message-info p-4 flex align-items-center justify-content-center">
-      <!-- comment about email for verification -->
-      We have sent you an email. Please follow the instructions in the email to verify your email address.
+
+    @if (status === 'success') {
+    <div class="gap-2 border-1 p-4 border-round ">
+      <div class="p-message p-message-info p-4 flex align-items-center justify-content-center">
+        <!-- comment about email for verification -->
+        We have sent you an email. Please follow the instructions in the email to verify your email address.
+      </div>
     </div>
+    }
+    @else {
+    <div class="flex flex-column gap-2 p-4 border-round-bottom surface-ground">
+      <div class="p-message p-message-info p-4 flex align-items-center justify-content-center">
+        You must verify your email address before you can login. Please check your email for the verification email or
+        click the Resend button to receive the verification email.
+      </div>
+
+      <p-messages [value]="messages" [enableService]="false" />
+
+      <div class="mt-4 p-fluid">
+        @if (status === 'loading') {
+        <button type="submit" class="p-button p-button-success" pButton pRipple>
+          <span class="flex align-items-center justify-content-center w-full gap-2">
+            <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem"></i>
+            <span class="p-button-label flex-grow-0">Processing...</span>
+          </span>
+        </button>
+        }
+        @else {
+        <button type="submit" class="p-button p-button-success" label="Resend" pButton pRipple
+          (click)="resend()"></button>
+        }
+      </div>
+    </div>
+    }
   </div>
-  }
-  @else {
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form gap-2 border-1 p-4 border-round ">
-
-    <span class="text-center">
-      <p class="text-2xl">Expense Tracker</p>
-    </span>
-    <div class="p-message p-message-info p-4 flex align-items-center justify-content-center">
-      You must verify your email address before you can login. Please check your email for the verification email or
-      enter your email address below to resend the verification email.
-    </div>
-
-    <p-messages [value]="messages" [enableService]="false" />
-
-    <div class="flex flex-column gap-2">
-      <label for="email">Email</label>
-      <input type="email" id="email" formControlName="email" pInputText class="p-inputtext" />
-      <ng-container *ngIf="form.get('email')?.errors && form.get('email')?.touched">
-        <small class="email-errors" class="text-red-500" *ngIf="form.get('email')?.errors?.['required']">
-          Email is required
-        </small>
-        <small class="email-errors" class="text-red-500" *ngIf="form.get('email')?.errors?.['email']">
-          Provide a valid email address
-        </small>
-      </ng-container>
-    </div>
-    <div class="mt-4 p-fluid">
-      @if (status === 'loading') {
-      <button type="submit" class="p-button p-button-success" pButton pRipple>
-        <span class="flex align-items-center justify-content-center w-full gap-2">
-          <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem"></i>
-          <span class="p-button-label flex-grow-0">Processing...</span>
-        </span>
-      </button>
-      }
-      @else {
-      <button type="submit" class="p-button p-button-success" label="Send" pButton pRipple></button>
-      }
-    </div>
-  </form>
-  }
 </div>

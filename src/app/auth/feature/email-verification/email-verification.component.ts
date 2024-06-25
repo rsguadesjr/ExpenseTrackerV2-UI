@@ -32,20 +32,10 @@ export class EmailVerificationComponent {
 
   messages: Message[] = [];
 
-  ngOnInit() {
-    onAuthStateChanged(this.firebaseAuth, (user) => {
-      if (user) {
-        console.log('[DEBUG]', user);
-      }
-    });
-  }
+  ngOnInit() {}
 
-  async onSubmit() {
-    if (
-      !this.firebaseAuth.currentUser ||
-      this.status === 'loading' ||
-      !this.form.valid
-    ) {
+  async resend() {
+    if (!this.firebaseAuth.currentUser || this.status === 'loading') {
       return;
     }
 
