@@ -1,5 +1,7 @@
+import { StatusType } from '../../core/constants/status-type';
+
 export interface AuthState {
-  status: 'idle' | 'loading' | 'success' | 'error';
+  status: StatusType;
   errors?: string[];
   user?: any;
   token?: string | null;

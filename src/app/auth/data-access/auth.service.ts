@@ -23,6 +23,7 @@ import {
   verifyBeforeUpdateEmail,
 } from '@angular/fire/auth';
 import { LoginRequest } from '../models/login-request';
+import { StatusType } from '../../core/constants/status-type';
 
 @Injectable({
   providedIn: 'root',
@@ -30,40 +31,32 @@ import { LoginRequest } from '../models/login-request';
 export class AuthService {
   private httpClient = inject(HttpClient);
   private baseUrl = environment.API_BASE_URL + 'auth';
-  private auth: Auth = inject(Auth);
+  private firebaseAuth: Auth = inject(Auth);
   private jwtHelper = new JwtHelperService();
 
+  private firebaseUser$ = new BehaviorSubject<User | null>(null);
   private authState$ = new BehaviorSubject<AuthState>({
-    status: 'idle',
+    status: StatusType.Idle,
   });
 
-  constructor() {
-    try {
-      const accessToken = localStorage.getItem('access_token');
+  private initialize = true;
 
-      if (accessToken) {
-        this.jwtHelper.decodeToken(accessToken);
-        const isExpired = this.jwtHelper.isTokenExpired(accessToken);
-        if (!isExpired) {
-          this.authState$.next({
-            status: 'success',
-            token: accessToken,
-            user: this.jwtHelper.decodeToken(accessToken),
-          });
-        } else {
-          this.signOut();
-        }
+  constructor() {
+    // this.processToken();
+    this.firebaseAuth.onAuthStateChanged(async (user) => {
+      this.firebaseUser$.next(user);
+
+      if (this.initialize) {
+        await this.processToken();
+        this.initialize = false;
       }
-    } catch (error) {
-      console.log('Error parsing token', error);
-      this.signOut();
-    }
+    });
   }
 
   // check if user is authenticated via firebase
-  isFirebaseAuthenticated$: Observable<boolean> = authState(this.auth).pipe(
-    map((user: User | null) => !!user && user.emailVerified)
-  );
+  isFirebaseAuthenticated$: Observable<boolean> = authState(
+    this.firebaseAuth
+  ).pipe(map((user: User | null) => !!user && user.emailVerified));
 
   // check if user is authenticated via firebase and also the backend api
   isAuthenticated$ = this.isFirebaseAuthenticated$.pipe(
@@ -74,19 +67,9 @@ export class AuthService {
     )
   );
 
-  // claims$: Observable<ParsedToken | null> = authState(this.auth).pipe(
-  //   switchMap((user: User | null) => {
-  //     if (user) {
-  //       return from(user.getIdTokenResult());
-  //     }
-  //     return from(Promise.resolve(null));
-  //   }),
-  //   map((token: IdTokenResult | null) => !!token && token.claims)
-  // );
-
   login(request: LoginRequest) {
     this.authState$.next({
-      status: 'loading',
+      status: StatusType.Loading,
     });
     return this.httpClient
       .post<string>(`${this.baseUrl}/token/login`, request)
@@ -99,7 +82,7 @@ export class AuthService {
         },
         error: (error: HttpErrorResponse) => {
           this.authState$.next({
-            status: 'error',
+            status: StatusType.Error,
             errors: [error.error?.detail || 'Something went wrong'],
           });
           console.error(error);
@@ -108,31 +91,73 @@ export class AuthService {
   }
 
   async generateAccessToken(forceRefresh = false) {
-    const result = await this.auth.currentUser?.getIdTokenResult(forceRefresh);
+    const result = await this.firebaseUser$.value?.getIdTokenResult(
+      forceRefresh
+    );
     if (result) {
       localStorage.setItem('access_token', result.token);
       this.authState$.next({
-        status: 'success',
+        status: StatusType.Success,
         user: result.claims,
         token: result.token,
         errors: [],
       });
-      return result.token;
+    } else {
+      await this.signOut();
     }
-
-    return '';
   }
 
   async signOut() {
     localStorage.removeItem('access_token');
     this.authState$.next({
-      status: 'idle',
+      status: StatusType.Idle,
       errors: [],
     });
-    await this.auth.signOut();
+    await this.firebaseAuth.signOut();
   }
 
   get authState(): Observable<AuthState> {
     return this.authState$.asObservable();
+  }
+
+  get authStateValue(): AuthState {
+    return this.authState$.value;
+  }
+
+  setStatus(status: StatusType, errors?: string | string[]) {
+    this.authState$.next({
+      ...this.authState$.value,
+      status,
+      errors: errors ? (Array.isArray(errors) ? errors : [errors]) : [],
+    });
+  }
+
+  async processToken() {
+    try {
+      // check if token is present in local storage, if not, sign out
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        await this.signOut();
+        return;
+      }
+
+      // check if token is valid and not expired
+      this.jwtHelper.decodeToken(accessToken);
+      const isExpired = this.jwtHelper.isTokenExpired(accessToken);
+      if (!isExpired) {
+        this.authState$.next({
+          status: StatusType.Success,
+          token: accessToken,
+          user: this.jwtHelper.decodeToken(accessToken),
+        });
+        return;
+      }
+
+      // if token is expired, generate a new one
+      await this.generateAccessToken(true);
+    } catch (error) {
+      console.log('Error parsing token', error);
+      this.signOut();
+    }
   }
 }

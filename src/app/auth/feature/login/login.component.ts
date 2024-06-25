@@ -23,6 +23,7 @@ import {
 import { PasswordModule } from 'primeng/password';
 import { DividerModule } from 'primeng/divider';
 import { Message } from 'primeng/api';
+import { StatusType } from '../../../core/constants/status-type';
 
 @Component({
   selector: 'app-login',
@@ -45,25 +46,22 @@ export class LoginComponent {
   private router = inject(Router);
   private firebaseAuth = inject(Auth);
 
-  status = 'idle';
-
   loginForm = new FormGroup({
     email: new FormControl('', [Validators.required, Validators.email]),
     password: new FormControl('', [Validators.required]),
   });
 
-  private passwordLoginErrors$ = new BehaviorSubject<string[]>([]);
-
   errorMessages$ = this.authService.authState.pipe(
     map((authState) => authState.errors || []),
-    combineLatestWith(this.passwordLoginErrors$),
-    map(([authStateErrors, passwordLoginErrors]) =>
-      [...authStateErrors, ...passwordLoginErrors].map(
-        (error) => ({ severity: 'error', detail: error } as Message)
+    map((errors) =>
+      errors.map(
+        (error) => ({ severity: StatusType.Error, detail: error } as Message)
       )
     ),
     takeUntilDestroyed()
   );
+
+  authState$ = this.authService.authState;
 
   constructor() {
     this.authService.isAuthenticated$.pipe(takeUntilDestroyed()).subscribe({
@@ -77,13 +75,16 @@ export class LoginComponent {
 
   async loginWithPassword() {
     this.loginForm.markAllAsTouched();
-    this.passwordLoginErrors$.next([]);
 
-    if (!this.loginForm.valid || this.status === 'loading') {
+    if (
+      !this.loginForm.valid ||
+      this.authService.authStateValue.status === StatusType.Loading
+    ) {
       return;
     }
 
     try {
+      this.authService.setStatus(StatusType.Loading);
       const result = await signInWithEmailAndPassword(
         this.firebaseAuth,
         this.loginForm.value.email!,
@@ -109,15 +110,20 @@ export class LoginComponent {
         e.code === 'auth/wrong-password' ||
         e.code === 'auth/user-not-found'
       ) {
-        this.passwordLoginErrors$.next(['Invalid email or password']);
+        this.authService.setStatus(
+          StatusType.Error,
+          'Invalid email or password'
+        );
       } else {
-        this.passwordLoginErrors$.next(['Something went wrong']);
+        this.authService.setStatus(StatusType.Error, 'Something went wrong');
       }
     }
   }
 
   async loginWithGoogle() {
-    if (this.status === 'loading') return;
+    if (this.authService.authStateValue.status === StatusType.Loading) {
+      return;
+    }
 
     try {
       var provider = new GoogleAuthProvider();
@@ -125,14 +131,21 @@ export class LoginComponent {
       const idToken = await result.user.getIdToken();
       const IdTokenResult = await result.user.getIdTokenResult();
 
+      this.authService.setStatus(StatusType.Loading);
       this.authService.login({
         idToken: idToken,
         provider: 'google',
         email: result.user.email as string,
         name: result.user.displayName as string,
       });
-    } catch (e) {
+    } catch (e: any) {
       console.log(e);
+      if (
+        e.code !== 'auth/popup-closed-by-user' &&
+        e.code !== 'auth/cancelled-popup-request'
+      ) {
+        this.authService.setStatus(StatusType.Error, 'Something went wrong');
+      }
     }
   }
 
