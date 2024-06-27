@@ -1,3 +1,4 @@
 <app-header *ngIf="isAuthenticated$ | async"></app-header>
+<p-progressBar *ngIf="showProgressBar$ | async" mode="indeterminate" [style]="{ height: '6px' }" />
 <app-sidebar></app-sidebar>
 <router-outlet></router-outlet>

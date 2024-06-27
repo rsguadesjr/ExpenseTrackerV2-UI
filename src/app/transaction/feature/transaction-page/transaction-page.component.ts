@@ -81,7 +81,6 @@ export class TransactionPageComponent implements OnInit {
   ngOnInit(): void {}
 
   editTransaction(transaction: TransactionResponse) {
-    console.log(transaction);
     this.transactionService.setEditMode('update', transaction);
     this.dialogService.open(TransactionFormComponent, {
       header: 'Update',
@@ -99,7 +98,6 @@ export class TransactionPageComponent implements OnInit {
   }
 
   deleteTransaction(transaction: TransactionResponse) {
-    console.log(transaction);
     this.confirmationService.confirm({
       header: 'Confirmation',
       icon: 'pi pi-exclamation-triangle',

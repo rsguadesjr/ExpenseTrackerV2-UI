@@ -1,24 +1,24 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { TrasactionQuery } from '../models/transaction-query.model';
 import { BehaviorSubject, take } from 'rxjs';
-import { TransactionState } from '../models/transaction-state.mode';
 import { StatusType } from '../../core/constants/status-type';
-import { TransactionResponse } from '../models/transaction-response.mode';
-import { TransactionRequest } from '../models/transaction-request.model';
+import { CategoryState } from '../models/category-state.model';
+import { CategoryResponse } from '../models/category-response.model';
+import { CategoryRequest } from '../models/category-request.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TransactionService {
-  private httpClient = inject(HttpClient);
-  private baseUrl = environment.API_BASE_URL + 'api/transactions';
+export class CategoryService {
+  private http = inject(HttpClient);
+  private baseUrl = environment.API_BASE_URL + 'api/categories';
 
-  private _state$ = new BehaviorSubject<TransactionState>({
+  private _state$ = new BehaviorSubject<CategoryState>({
     status: StatusType.Idle,
-    transactions: [],
+    categories: [],
   });
+
   state$ = this._state$.asObservable();
   get stateValue() {
     return this._state$.value;
@@ -27,21 +27,21 @@ export class TransactionService {
   resetState() {
     this._state$.next({
       status: StatusType.Idle,
-      transactions: [],
+      categories: [],
     });
   }
 
-  loadTransactions(query: TrasactionQuery) {
+  loadCategories() {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .get<TransactionResponse[]>(this.baseUrl, { params: { ...query } })
+    this.http
+      .get<CategoryResponse[]>(this.baseUrl)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Success,
-            transactions: response,
+            categories: response,
             errors: [],
           });
         },
@@ -56,22 +56,20 @@ export class TransactionService {
       });
   }
 
-  loadTransactionById(id: string) {
+  loadCategoryById(id: string) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .get<TransactionResponse>(`${this.baseUrl}/${id}`)
+    this.http
+      .get<CategoryResponse>(`${this.baseUrl}/${id}`)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           const state = this._state$.value;
-          const index = state.transactions.findIndex(
-            (x) => x.id === response.id
-          );
-          state.transactions[index] = response;
+          const index = state.categories.findIndex((x) => x.id === response.id);
+          state.categories[index] = response;
           this._state$.next({
             ...state,
             status: StatusType.Success,
-            selectedTransaction: response,
+            selectedCategory: response,
             errors: [],
           });
         },
@@ -86,17 +84,17 @@ export class TransactionService {
       });
   }
 
-  createTransaction(request: TransactionRequest) {
+  createCategory(category: CategoryRequest) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .post<TransactionResponse>(this.baseUrl, request)
+    this.http
+      .post<CategoryResponse>(this.baseUrl, category)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           this._state$.next({
-            transactions: [response, ...this._state$.value.transactions],
+            ...this._state$.value,
             status: StatusType.Success,
-            selectedTransaction: response,
+            categories: [...this._state$.value.categories, response],
             errors: [],
           });
         },
@@ -111,22 +109,20 @@ export class TransactionService {
       });
   }
 
-  updateTransaction(request: TransactionRequest) {
+  updateCategory(category: CategoryRequest) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .put<TransactionResponse>(`${this.baseUrl}/${request.id}`, request)
+    this.http
+      .put<CategoryResponse>(`${this.baseUrl}/${category.id}`, category)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           const state = this._state$.value;
-          const index = state.transactions.findIndex(
-            (x) => x.id === response.id
-          );
-          state.transactions[index] = response;
+          const index = state.categories.findIndex((x) => x.id === response.id);
+          state.categories[index] = response;
           this._state$.next({
             ...state,
             status: StatusType.Success,
-            selectedTransaction: response,
+            selectedCategory: response,
             errors: [],
           });
         },
@@ -141,17 +137,18 @@ export class TransactionService {
       });
   }
 
-  deleteTransaction(id: string) {
-    this.httpClient
-      .delete<TransactionResponse>(`${this.baseUrl}/${id}`)
+  deleteCategory(id: string) {
+    this.updateStatus(StatusType.Loading);
+    this.http
+      .delete<CategoryResponse>(this.baseUrl + '/' + id)
       .pipe(take(1))
       .subscribe({
-        next: (response) => {
+        next: () => {
           const state = this._state$.value;
-          const transactions = state.transactions.filter((x) => x.id !== id);
+          const categories = state.categories.filter((x) => x.id !== id);
           this._state$.next({
             ...state,
-            transactions,
+            categories,
             status: StatusType.Success,
             errors: [],
           });
@@ -165,17 +162,6 @@ export class TransactionService {
           console.error(error);
         },
       });
-  }
-
-  setEditMode(
-    editMode: 'create' | 'update',
-    transaction?: TransactionResponse
-  ) {
-    this._state$.next({
-      ...this._state$.value,
-      editMode,
-      selectedTransaction: transaction,
-    });
   }
 
   private updateStatus(status: StatusType, errors: string[] = []) {

@@ -1,24 +1,25 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { TrasactionQuery } from '../models/transaction-query.model';
-import { BehaviorSubject, take } from 'rxjs';
-import { TransactionState } from '../models/transaction-state.mode';
 import { StatusType } from '../../core/constants/status-type';
-import { TransactionResponse } from '../models/transaction-response.mode';
-import { TransactionRequest } from '../models/transaction-request.model';
+import { BehaviorSubject, take } from 'rxjs';
+import { AccountState } from '../models/account-state.model';
+import { AccountResponse } from '../models/account-response.model';
+import { AccountRequest } from '../models/account-request.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class TransactionService {
-  private httpClient = inject(HttpClient);
-  private baseUrl = environment.API_BASE_URL + 'api/transactions';
+export class AccountService {
+  private http = inject(HttpClient);
+  private baseUrl = environment.API_BASE_URL + 'api/accounts';
 
-  private _state$ = new BehaviorSubject<TransactionState>({
+  private _state$ = new BehaviorSubject<AccountState>({
     status: StatusType.Idle,
-    transactions: [],
+    accounts: [],
+    currentAccount: null,
   });
+
   state$ = this._state$.asObservable();
   get stateValue() {
     return this._state$.value;
@@ -27,21 +28,26 @@ export class TransactionService {
   resetState() {
     this._state$.next({
       status: StatusType.Idle,
-      transactions: [],
+      accounts: [],
+      currentAccount: null,
     });
   }
 
-  loadTransactions(query: TrasactionQuery) {
+  loadAccounts() {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .get<TransactionResponse[]>(this.baseUrl, { params: { ...query } })
+    return this.http
+      .get<AccountResponse[]>(this.baseUrl)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
+          let currentAccount = response.find((x) => x.isDefault);
+          currentAccount = currentAccount || response[0];
+
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Success,
-            transactions: response,
+            accounts: response,
+            currentAccount,
             errors: [],
           });
         },
@@ -51,27 +57,24 @@ export class TransactionService {
             status: StatusType.Error,
             errors: [error.error?.detail || 'Something went wrong'],
           });
-          console.error(error);
         },
       });
   }
 
-  loadTransactionById(id: string) {
+  loadAccountById(id: string) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .get<TransactionResponse>(`${this.baseUrl}/${id}`)
+    return this.http
+      .get<AccountResponse>(`${this.baseUrl}/${id}`)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           const state = this._state$.value;
-          const index = state.transactions.findIndex(
-            (x) => x.id === response.id
-          );
-          state.transactions[index] = response;
+          const index = state.accounts.findIndex((x) => x.id === response.id);
+          state.accounts[index] = response;
           this._state$.next({
             ...state,
             status: StatusType.Success,
-            selectedTransaction: response,
+            selectedAccount: response,
             errors: [],
           });
         },
@@ -81,22 +84,22 @@ export class TransactionService {
             status: StatusType.Error,
             errors: [error.error?.detail || 'Something went wrong'],
           });
-          console.error(error);
         },
       });
   }
 
-  createTransaction(request: TransactionRequest) {
+  createAccount(account: AccountRequest) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .post<TransactionResponse>(this.baseUrl, request)
+    return this.http
+      .post<AccountResponse>(this.baseUrl, account)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           this._state$.next({
-            transactions: [response, ...this._state$.value.transactions],
+            ...this._state$.value,
+            accounts: [response, ...this._state$.value.accounts],
             status: StatusType.Success,
-            selectedTransaction: response,
+            selectedAccount: response,
             errors: [],
           });
         },
@@ -106,27 +109,24 @@ export class TransactionService {
             status: StatusType.Error,
             errors: [error.error?.detail || 'Something went wrong'],
           });
-          console.error(error);
         },
       });
   }
 
-  updateTransaction(request: TransactionRequest) {
+  updateAccount(account: AccountRequest) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .put<TransactionResponse>(`${this.baseUrl}/${request.id}`, request)
+    return this.http
+      .put<AccountResponse>(`${this.baseUrl}/${account.id}`, account)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           const state = this._state$.value;
-          const index = state.transactions.findIndex(
-            (x) => x.id === response.id
-          );
-          state.transactions[index] = response;
+          const index = state.accounts.findIndex((x) => x.id === response.id);
+          state.accounts[index] = response;
           this._state$.next({
             ...state,
             status: StatusType.Success,
-            selectedTransaction: response,
+            selectedAccount: response,
             errors: [],
           });
         },
@@ -136,22 +136,22 @@ export class TransactionService {
             status: StatusType.Error,
             errors: [error.error?.detail || 'Something went wrong'],
           });
-          console.error(error);
         },
       });
   }
 
-  deleteTransaction(id: string) {
-    this.httpClient
-      .delete<TransactionResponse>(`${this.baseUrl}/${id}`)
+  deleteAccount(id: string) {
+    this.updateStatus(StatusType.Loading);
+    return this.http
+      .delete(this.baseUrl + '/accounts/' + id)
       .pipe(take(1))
       .subscribe({
-        next: (response) => {
+        next: () => {
           const state = this._state$.value;
-          const transactions = state.transactions.filter((x) => x.id !== id);
+          const accounts = state.accounts.filter((x) => x.id !== id);
           this._state$.next({
             ...state,
-            transactions,
+            accounts,
             status: StatusType.Success,
             errors: [],
           });
@@ -167,17 +167,14 @@ export class TransactionService {
       });
   }
 
-  setEditMode(
-    editMode: 'create' | 'update',
-    transaction?: TransactionResponse
-  ) {
+  setCurrentAccount(id: string) {
+    const state = this._state$.value;
+    const currentAccount = state.accounts.find((x) => x.id === id)!;
     this._state$.next({
-      ...this._state$.value,
-      editMode,
-      selectedTransaction: transaction,
+      ...state,
+      currentAccount,
     });
   }
-
   private updateStatus(status: StatusType, errors: string[] = []) {
     this._state$.next({
       ...this._state$.value,

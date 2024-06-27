@@ -24,7 +24,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     null
   );
   let token = authService.authStateValue.token;
-  console.log('[DEBUG][authInterceptor] token', token);
   if (token) {
     req = addTokenHeader(req, token);
   }

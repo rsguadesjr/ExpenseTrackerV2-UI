@@ -17,6 +17,8 @@ import { ChipsModule } from 'primeng/chips';
 import { CalendarModule } from 'primeng/calendar';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CategoryService } from '../../../category/data-access/category.service';
+import { AccountService } from '../../../account/data-access/account.service';
 
 @Component({
   selector: 'app-transaction-form',
@@ -36,74 +38,15 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class TransactionFormComponent {
   private transactionService = inject(TransactionService);
+  private categoryService = inject(CategoryService);
+  private accountService = inject(AccountService);
   private ref = inject(DynamicDialogRef);
+
   transactionState$ = this.transactionService.state$;
 
-  categories$ = of([
-    {
-      id: '9121844b-ff38-4274-b5db-19325a129a02',
-      name: 'Food',
-      description: null,
-      isActive: true,
-      order: 1,
-      createdDate: null,
-      modifiedDate: null,
-    },
-    {
-      id: '2c647552-175a-4d82-815f-3b7c365ab466',
-      name: 'Others',
-      description: null,
-      isActive: true,
-      order: 7,
-      createdDate: null,
-      modifiedDate: null,
-    },
-    {
-      id: 'f80d182e-3334-40cd-a09f-40ac395022f6',
-      name: 'Rent',
-      description: null,
-      isActive: true,
-      order: 6,
-      createdDate: null,
-      modifiedDate: null,
-    },
-    {
-      id: '995fd19f-bf08-46b8-b1ce-9c51945fbf7f',
-      name: 'Shopping',
-      description: null,
-      isActive: true,
-      order: 5,
-      createdDate: null,
-      modifiedDate: null,
-    },
-    {
-      id: '96699e79-4af8-4cf7-8b48-d6dc0678065f',
-      name: 'Bills',
-      description: null,
-      isActive: true,
-      order: 2,
-      createdDate: null,
-      modifiedDate: null,
-    },
-    {
-      id: '40fff92b-97d1-4cf5-8164-f9646cfb0929',
-      name: 'Transportation',
-      description: null,
-      isActive: true,
-      order: 4,
-      createdDate: null,
-      modifiedDate: null,
-    },
-    {
-      id: 'e71f4560-75f0-4c9a-b1a4-fe813f4fdc9b',
-      name: 'Health',
-      description: null,
-      isActive: true,
-      order: 3,
-      createdDate: null,
-      modifiedDate: null,
-    },
-  ]);
+  categories$ = this.categoryService.state$.pipe(
+    map((state) => state.categories)
+  );
 
   form = new FormGroup({
     id: new FormControl<string | null>(null),
@@ -162,9 +105,7 @@ export class TransactionFormComponent {
       transactionDate: this.form.value.transactionDate?.toISOString()!,
       categoryId: this.form.value.categoryId!,
       tags: this.form.value.tags!,
-
-      // TODO: get account id from account service (to be implemented)
-      accountId: '8223b7c6-73ca-4c4c-bc2d-a32eb347105a',
+      accountId: this.accountService.stateValue.currentAccount?.id!,
     };
 
     if (request.id) {

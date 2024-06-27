@@ -6,8 +6,11 @@
     </a>
   </div>
   <ng-template pTemplate="end">
+
     <!-- <span class="mr-2"><b>{{ authState.user?.name }}</b></span> -->
     <div class="flex align-items-center gap-2">
+      <p-dropdown id="categoryId" [(ngModel)]="selectedAccount" [options]="(accounts$ | async) ?? []" optionLabel="name"
+        optionValue="id" (onChange)="onAccountChange($event)"></p-dropdown>
       @if (authState.user?.picture){
       <p-avatar [image]="authState.user.picture" shape="circle" (click)="avatarMenu.toggle($event)"
         styleClass="cursor-pointer" size="large" />
@@ -20,3 +23,6 @@
     <p-tieredMenu #avatarMenu [model]="items" [popup]="true"></p-tieredMenu>
   </ng-template>
 </p-toolbar>
+
+<p-toast />
+<p-confirmDialog />

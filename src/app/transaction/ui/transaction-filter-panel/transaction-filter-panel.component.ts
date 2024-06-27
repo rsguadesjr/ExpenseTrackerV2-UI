@@ -128,7 +128,6 @@ export class TransactionFilterPanelComponent {
     if (this.filterForm.invalid || this.showLoading) {
       return;
     }
-    console.log(this.filterForm.value);
     this.dateFilter.emit({
       startDate: this.filterForm.get('startDate')?.value,
       endDate: this.filterForm.get('endDate')?.value,
