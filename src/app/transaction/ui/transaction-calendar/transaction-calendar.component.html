@@ -1,0 +1,16 @@
+<div class="p-fluid app-calendar">
+  <p-calendar class="max-w-full" [inline]="true">
+
+    <ng-template pTemplate="date" let-date>
+      <div class="flex flex-column align-items-center justify-content-end">
+        <span class="p-1">{{ date.day }}</span>
+        <div class="flex gap-2">
+          <ng-container *ngIf="calendarData[date.year + '-' + (date.month) + '-' + date.day]; let item;">
+            <span class="app-calendar-chip">{{ item | number }}</span>
+          </ng-container>
+
+        </div>
+      </div>
+    </ng-template>
+  </p-calendar>
+</div>

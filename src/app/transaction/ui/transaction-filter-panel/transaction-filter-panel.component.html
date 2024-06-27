@@ -1,0 +1,28 @@
+<p-toolbar [formGroup]="filterForm">
+  <div class="flex justify-content-start gap-2 align-items-start">
+    <p-dropdown [options]="viewModes" formControlName="viewMode" optionLabel="name" placeholder="Select a View" />
+    @if (filterForm.get('viewMode')?.value?.value === 'Month') {
+    <p-calendar formControlName="month" view="month" dateFormat="MM-yy" [readonlyInput]="true" placeholder="month" />
+    }
+    @else {
+    <div class="flex flex-column gap-1">
+      <p-calendar formControlName="startDate" [showIcon]="true" placeholder="Start Date" />
+      <small class="email-errors" class="text-red-500"
+        *ngIf="filterForm.get('startDate')?.touched && filterForm.get('startDate')?.errors?.required">
+        Start Date is required
+      </small>
+    </div>
+
+    <div class="flex flex-column gap-1">
+      <p-calendar formControlName="endDate" [showIcon]="true" placeholder="End Date" />
+      <small class="email-errors" class="text-red-500"
+        *ngIf="filterForm.get('endDate')?.touched && filterForm.get('endDate')?.errors?.required">
+        End Date is required
+      </small>
+    </div>
+    }
+    <button pButton pRipple label="Apply Filter" class="p-button-success"
+      [icon]="showLoading ? 'pi pi-spin pi-spinner' : 'pi pi-filter'" (click)="applyFilter()">
+    </button>
+  </div>
+</p-toolbar>

@@ -102,9 +102,9 @@ export class AuthService {
         token: result.token,
         errors: [],
       });
-    } else {
-      await this.signOut();
     }
+
+    return result?.token;
   }
 
   async signOut() {
@@ -154,10 +154,14 @@ export class AuthService {
       }
 
       // if token is expired, generate a new one
-      await this.generateAccessToken(true);
+      const newToken = await this.generateAccessToken(true);
+      if (!newToken) {
+        await this.signOut();
+        return;
+      }
     } catch (error) {
       console.log('Error parsing token', error);
-      this.signOut();
+      await this.signOut();
     }
   }
 }

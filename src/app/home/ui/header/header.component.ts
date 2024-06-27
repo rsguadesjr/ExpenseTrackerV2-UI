@@ -8,7 +8,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { AuthService } from '../../../auth/data-access/auth.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { UiService } from '../../service/ui-service';
+import { UiService } from '../../services/ui-service';
 
 @Component({
   selector: 'app-header',

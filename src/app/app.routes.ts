@@ -48,4 +48,14 @@ export const routes: Routes = [
         './auth/feature/email-verification/email-verification.component'
       ).then((m) => m.EmailVerificationComponent),
   },
+  {
+    path: 'transactions',
+    data: { title: 'transactions' },
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import(
+        './transaction/feature/transaction-shell/transaction-shell-routing.module'
+      ).then((m) => m.TransactionShellRoutingModule),
+  },
+  { path: '**', redirectTo: 'dashboard' },
 ];

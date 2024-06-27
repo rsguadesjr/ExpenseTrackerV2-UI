@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { SidebarModule } from 'primeng/sidebar';
-import { UiService } from '../../service/ui-service';
+import { UiService } from '../../services/ui-service';
 
 @Component({
   selector: 'app-sidebar',
