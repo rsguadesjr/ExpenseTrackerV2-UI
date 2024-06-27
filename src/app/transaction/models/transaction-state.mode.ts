@@ -6,4 +6,6 @@ export interface TransactionState {
   errors?: string[];
   transactions: TransactionResponse[];
   selectedTransaction?: TransactionResponse;
+
+  editMode?: 'create' | 'update';
 }

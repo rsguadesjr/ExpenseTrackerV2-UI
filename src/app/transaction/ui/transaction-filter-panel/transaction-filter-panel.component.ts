@@ -35,7 +35,8 @@ import { ToolbarModule } from 'primeng/toolbar';
 export class TransactionFilterPanelComponent {
   viewModes: { name: string; value: string }[] = [
     { name: 'Month', value: 'Month' },
-    { name: 'Custom Range', value: 'CustomRange' },
+    // TODO: add custom range in the future, currently not supported
+    // { name: 'Custom Range', value: 'CustomRange' },
   ];
   monthList: {
     name: string;

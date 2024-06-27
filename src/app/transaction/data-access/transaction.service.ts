@@ -20,8 +20,16 @@ export class TransactionService {
     transactions: [],
   });
   state$ = this._state$.asObservable();
+  stateValue = this._state$.value;
 
   constructor() {}
+
+  resetState() {
+    this._state$.next({
+      status: StatusType.Idle,
+      transactions: [],
+    });
+  }
 
   loadTransactions(query: TrasactionQuery) {
     this.updateStatus(StatusType.Loading);
@@ -152,6 +160,17 @@ export class TransactionService {
           console.error(error);
         },
       });
+  }
+
+  setEditMode(
+    editMode: 'create' | 'update',
+    transaction?: TransactionResponse
+  ) {
+    this._state$.next({
+      ...this._state$.value,
+      editMode,
+      selectedTransaction: transaction,
+    });
   }
 
   private updateStatus(status: StatusType, errors: string[] = []) {

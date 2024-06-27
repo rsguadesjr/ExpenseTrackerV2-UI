@@ -1,23 +1,25 @@
-import { CommonModule, DecimalPipe } from '@angular/common';
-import { Component, Input, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, Input } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { CalendarModule } from 'primeng/calendar';
 import { ChipModule } from 'primeng/chip';
 
 @Component({
   selector: 'app-transaction-calendar',
   standalone: true,
-  imports: [CommonModule, CalendarModule, ChipModule],
-  providers: [DecimalPipe],
+  imports: [CommonModule, FormsModule, CalendarModule, ChipModule],
+  providers: [],
   templateUrl: './transaction-calendar.component.html',
   styleUrl: './transaction-calendar.component.scss',
 })
 export class TransactionCalendarComponent {
-  private decimalPipe = inject(DecimalPipe);
+  @Input() month = new Date();
 
   // @Input() data: { date: Date; value: number }[] = [];
   calendarData: { [key: string]: number } = {};
   // calendarData: { day: number; month: number; year: number; value: number }[] = [];
   @Input() set data(value: { date: Date; value: number }[]) {
+    this.calendarData = {};
     value.forEach((v) => {
       const day = v.date.getDate();
       const month = v.date.getMonth();

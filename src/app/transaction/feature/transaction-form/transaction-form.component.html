@@ -1,0 +1,38 @@
+<ng-container *ngIf="transactionState$ | async; let state">
+  <form [formGroup]="form" class="flex flex-column gap-2" (ngSubmit)="onSubmit()">
+    <div class="flex flex-column gap-2 p-fluid">
+      <label for="amount">Amount</label>
+      <p-inputNumber id="amount" formControlName="amount" />
+      <small class="amount-errors" class="text-red-500" *ngIf="form.get('amount')?.errors?.required"></small>
+    </div>
+    <div class="flex flex-column gap-2 p-fluid">
+      <label for="description">Description</label>
+      <input pInputText id="description" formControlName="description" />
+      <small class="description-errors" class="text-red-500" *ngIf="form.get('description')?.errors?.required"></small>
+    </div>
+    <div class="flex flex-column gap-2 p-fluid">
+      <label for="categoryId">Category</label>
+      <p-dropdown id="categoryId" formControlName="categoryId" [options]="(categories$ | async) ?? []"
+        optionLabel="name" optionValue="id"></p-dropdown>
+      <small class="category-errors" class="text-red-500" *ngIf="form.get('categoryId')?.errors?.required"></small>
+    </div>
+    <div class="flex flex-column gap-2 p-fluid">
+      <label for="transactionDate">Date</label>
+      <p-calendar id="transactionDate" formControlName="transactionDate" dateFormat="dd-M-yy"
+        appendTo="body"></p-calendar>
+      <small class="transactionDate-errors" class="text-red-500"
+        *ngIf="form.get('transactionDate')?.errors?.required"></small>
+    </div>
+    <div class="flex flex-column gap-2 p-fluid">
+      <label htmlFor="form-tags">Tags</label>
+      <p-chips id="form-tags" formControlName="tags" separator="," [addOnBlur]="true"></p-chips>
+    </div>
+
+    <div class="flex justify-content-end gap-2 mt-4">
+      <button pButton pRipple label="Cancel" (click)="cancel()" [disabled]="state.status === 'loading'"></button>
+      <button pButton pRipple label="Submit" class="p-button-success" [disabled]="state.status === 'loading'"
+        [icon]="state.status === 'loading' ? 'pi pi-spin pi-spinner' : ''">
+      </button>
+    </div>
+  </form>
+</ng-container>
