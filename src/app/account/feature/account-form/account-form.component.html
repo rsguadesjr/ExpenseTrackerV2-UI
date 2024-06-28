@@ -1,0 +1,48 @@
+<ng-container *ngIf="state$ | async; let state">
+  <p-messages [value]="(errorMessages$ | async) ?? []" [enableService]="false" [closable]="true" />
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-column gap-2">
+    <div class="flex flex-column gap-2 p-fluid">
+      <label for="name">Account Name</label>
+      <input pInputText id="name" formControlName="name" />
+      <small class="name-errors" class="text-red-500" *ngIf="form.get('name')?.errors?.required">Account name is
+        required</small>
+    </div>
+    <div class="flex flex-column gap-2 p-fluid">
+      <label for="description">Description</label>
+      <input pInputText id="description" formControlName="description" />
+      <small class="description-errors" class="text-red-500"
+        *ngIf="form.get('description')?.errors?.required">Description is required</small>
+    </div>
+    <div class="flex justify-content-start">
+      <div class="w-6 flex flex-column gap-2 p-fluid">
+        <label for="description">IsActive</label>
+        <div class="flex justify-content-start gap-2">
+          <p-inputSwitch formControlName="isActive" />
+          <span>{{ form.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
+        </div>
+        <small class="isActive-errors" class="text-red-500" *ngIf="form.get('isActive')?.errors?.required">IsActive is
+          required</small>
+      </div>
+      <div class="w-6 flex flex-column gap-2 p-fluid">
+        <label for="description">IsDefault</label>
+        <div class="flex justify-content-start gap-2">
+          <p-inputSwitch formControlName="isDefault" />
+          <span>{{ form.get('isDefault')?.value ? 'Default' : 'Not Default' }}</span>
+        </div>
+        <small class="isDefault-errors" class="text-red-500" *ngIf="form.get('isDefault')?.errors?.required">IsDefault
+          is required</small>
+        <small class="isDefault-errors" class="text-red-500"
+          *ngIf="form.get('isDefault')?.errors?.mustNotBeDefault">Inactive account must not be default</small>
+      </div>
+    </div>
+
+    <div class="flex justify-content-end gap-2 mt-4">
+      <button pButton pRipple label="Cancel" (click)="cancel()" [disabled]="state.status === 'loading'"></button>
+      <button pButton pRipple label="Submit" class="p-button-success" [disabled]="state.status === 'loading'"
+        [icon]="state.status === 'loading' ? 'pi pi-spin pi-spinner' : ''">
+      </button>
+    </div>
+    [{{ form.value | json }}]
+    [{{ form.invalid }}]
+  </form>
+</ng-container>

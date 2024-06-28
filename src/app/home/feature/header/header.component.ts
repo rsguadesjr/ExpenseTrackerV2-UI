@@ -45,7 +45,9 @@ export class HeaderComponent {
   private messageService = inject(MessageService);
   uiService = inject(UiService);
 
-  accounts$ = this.accountService.state$.pipe(map((state) => state.accounts));
+  accounts$ = this.accountService.state$.pipe(
+    map((state) => state.accounts.filter((a) => a.isActive))
+  );
   selectedAccount!: string;
   authState$ = this.authService.authState;
   items: MenuItem[] = [
@@ -75,11 +77,11 @@ export class HeaderComponent {
     );
     this.confirmationService.confirm({
       header: 'Confirmation',
-      icon: 'pi pi-exclamation-triangle',
-      message: `Are you sure you want to change account to ${
+      icon: 'pi pi-exclamation-circle',
+      message: `Are you sure you want to change account to "${
         selectedAccount!.name
-      }?`,
-      acceptButtonStyleClass: 'p-button-danger',
+      }"?`,
+      acceptButtonStyleClass: 'p-button-info',
       accept: () => {
         this.accountService.setCurrentAccount(value);
         this.messageService.add({

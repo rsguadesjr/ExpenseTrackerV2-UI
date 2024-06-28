@@ -10,4 +10,7 @@ export interface AccountState {
 
   // currentAccount will be the one to be used for fetching transactions
   currentAccount: AccountResponse | null;
+
+  // used for editing account
+  editMode?: 'create' | 'update' | null;
 }

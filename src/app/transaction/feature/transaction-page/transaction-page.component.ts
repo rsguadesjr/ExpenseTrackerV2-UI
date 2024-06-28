@@ -20,6 +20,7 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
+import { AccountService } from '../../../account/data-access/account.service';
 
 @Component({
   selector: 'app-transaction-page',
@@ -48,6 +49,7 @@ export class TransactionPageComponent implements OnInit {
   private transactionService = inject(TransactionService);
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
+  private accountService = inject(AccountService);
 
   transactionsState$ = this.transactionService.state$;
   calendarData$ = this.transactionService.state$.pipe(
@@ -74,6 +76,7 @@ export class TransactionPageComponent implements OnInit {
         this.transactionService.loadTransactions({
           year: event.startDate.getFullYear(),
           month: event.startDate.getMonth() + 1,
+          accountId: this.accountService.stateValue.currentAccount?.id,
         });
       });
   }

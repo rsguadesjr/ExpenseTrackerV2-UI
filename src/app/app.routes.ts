@@ -57,5 +57,15 @@ export const routes: Routes = [
         './transaction/feature/transaction-shell/transaction-shell-routing.module'
       ).then((m) => m.TransactionShellRoutingModule),
   },
+  {
+    path: 'accounts',
+    data: { title: 'accounts' },
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./account/feature/account-shell/account-shell.module').then(
+        (m) => m.AccountShellModule
+      ),
+  },
+
   { path: '**', redirectTo: 'dashboard' },
 ];

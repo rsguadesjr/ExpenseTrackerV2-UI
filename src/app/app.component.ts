@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { HeaderComponent } from './home/feature/header/header.component';
 import { SidebarComponent } from './home/feature/sidebar/sidebar.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { filter, map } from 'rxjs';
+import { combineLatestWith, filter, map } from 'rxjs';
 import { TransactionService } from './transaction/data-access/transaction.service';
 import { AccountService } from './account/data-access/account.service';
 import { CategoryService } from './category/data-access/category.service';
@@ -35,7 +35,13 @@ export class AppComponent {
   isAuthenticated$ = this.authService.isAuthenticated$;
 
   showProgressBar$ = this.transactionService.state$.pipe(
-    map((state) => state.status === StatusType.Loading)
+    combineLatestWith(this.accountService.state$, this.categoryService.state$),
+    map(
+      ([transactionState, accountState, categoryState]) =>
+        transactionState.status === StatusType.Loading ||
+        accountState.status === StatusType.Loading ||
+        categoryState.status === StatusType.Loading
+    )
   );
 
   constructor() {
@@ -52,12 +58,16 @@ export class AppComponent {
         }
       });
 
+    // subscribe to account changes except wh
     this.accountService.state$
       .pipe(
-        filter((state) => state.status === StatusType.Success),
+        filter(
+          (state) => state.status === StatusType.Success && !state.editMode
+        ),
         takeUntilDestroyed()
       )
       .subscribe((state) => {
+        console.log('Account State', state);
         this.transactionService.loadTransactions({
           year: new Date().getFullYear(),
           month: new Date().getMonth() + 1,
