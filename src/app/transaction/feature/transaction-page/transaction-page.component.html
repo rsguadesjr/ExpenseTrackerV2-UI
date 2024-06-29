@@ -1,70 +1,57 @@
 <ng-container *ngIf="transactionsState$ | async; let state">
-  <div class="w-full p-2">
+  <div class="w-full mb-2">
     <app-transaction-filter-panel (dateFilter)="onDateFilter($event)"
       [showLoading]="state.status === 'loading'"></app-transaction-filter-panel>
   </div>
-  <div class="grid w-full m-0">
-    <div class="col-12">
-      <p-card styleClass="surface-ground surface-border border-1">
-        <ng-template pTemplate="header">
-          <div class="flex justify-content-between align-items-center p-4 pb-0">
-            <span>Transactions</span>
-            <p-button icon="pi pi-plus" [rounded]="true" severity="info" (click)="createTransaction()"
-              pTooltip="Create Transaction" tooltipPosition="left" showDelay="500" hideDelay="300" />
-          </div>
-        </ng-template>
-        <p-table [value]="state.transactions" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
-          [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-striped border-round"
-          currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-          [rowsPerPageOptions]="[10, 25, 50]" paginatorStyleClass="justify-content-end">
-          <ng-template pTemplate="header">
-            <tr>
-              <th>Category</th>
-              <th>Amount</th>
-              <th>Date</th>
-              <th>Tags</th>
-              <th>Created Date</th>
-              <th>Modified Date</th>
-              <th></th>
-            </tr>
-          </ng-template>
-          <ng-template pTemplate="body" let-transaction>
-            <tr>
-              <td class="p-2 px-4">{{ transaction.category?.value }}</td>
-              <td class="p-2">{{ transaction.amount }}</td>
-              <td class="p-2">{{ transaction.transactionDate | date }}</td>
-              <td class="p-2">
-                <ng-container *ngIf="transaction.tags; let tags">
-                  <p-chip *ngFor="let tag of tags" [label]="tag" styleClass="mr-1" />
-                </ng-container>
-              </td>
-              <td class="p-2">{{ transaction.createdDate | date:'short' }}</td>
-              <td class="p-2">{{ transaction.modifiedDate | date:'short' }}</td>
-              <td class="p-2">
-                <div class="flex gap-1 justify-content-end">
-                  <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info"
-                    pTooltip="Edit Transaction" tooltipPosition="left" (click)="editTransaction(transaction)"
-                    size="small" showDelay="500" hideDelay="300" />
-                  <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
-                    pTooltip="Delete Transaction" tooltipPosition="left" (click)="deleteTransaction(transaction)"
-                    size="small" showDelay="500" hideDelay="300" />
-                </div>
-              </td>
-            </tr>
-          </ng-template>
-
-        </p-table>
-      </p-card>
-    </div>
-    <!-- <div class="col-4 ">
-      <div class="grid">
-        <div class="col-12">
-          <ng-container *ngIf="calendarData$ | async as calendarData">
-            <app-transaction-calendar [data]="calendarData"></app-transaction-calendar>
-          </ng-container>
-        </div>
+  <p-card styleClass="surface-ground surface-border border-1">
+    <ng-template pTemplate="header">
+      <div class="flex justify-content-between align-items-center p-4 pb-0">
+        <span class="text-2xl">Transactions</span>
+        <p-button icon="pi pi-plus" [rounded]="true" severity="info" (click)="createTransaction()"
+          pTooltip="Create Transaction" tooltipPosition="left" showDelay="500" hideDelay="300" />
       </div>
-    </div> -->
-  </div>
+    </ng-template>
+    <p-table [value]="state.transactions" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+      [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-striped border-round"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [rowsPerPageOptions]="[10, 25, 50]" paginatorStyleClass="justify-content-end">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Category</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Tags</th>
+          <th>Created Date</th>
+          <th>Modified Date</th>
+          <th></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-transaction>
+        <tr>
+          <td class="p-2 px-4">{{ transaction.category?.value }}</td>
+          <td class="p-2">{{ transaction.amount }}</td>
+          <td class="p-2">{{ transaction.transactionDate | date }}</td>
+          <td class="p-2">
+            <ng-container *ngIf="transaction.tags; let tags">
+              <p-chip *ngFor="let tag of tags" [label]="tag" styleClass="mr-1" />
+            </ng-container>
+          </td>
+          <td class="p-2">{{ transaction.createdDate | date:'short' }}</td>
+          <td class="p-2">{{ transaction.modifiedDate | date:'short' }}</td>
+          <td class="p-2">
+            <div class="flex gap-1 justify-content-end">
+              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" pTooltip="Edit Transaction"
+                tooltipPosition="left" (click)="editTransaction(transaction)" size="small" showDelay="500"
+                hideDelay="300" />
+              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
+                pTooltip="Delete Transaction" tooltipPosition="left" (click)="deleteTransaction(transaction)"
+                size="small" showDelay="500" hideDelay="300" />
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  </p-card>
   <p-confirmDialog />
 </ng-container>
