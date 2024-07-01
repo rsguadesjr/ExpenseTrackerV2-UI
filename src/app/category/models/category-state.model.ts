@@ -6,4 +6,7 @@ export interface CategoryState {
   errors?: string[];
   categories: CategoryResponse[];
   selectedCategory?: CategoryResponse | null;
+
+  // used for editing
+  editMode?: 'create' | 'update';
 }

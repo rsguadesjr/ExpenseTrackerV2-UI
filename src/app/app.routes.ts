@@ -66,6 +66,15 @@ export const routes: Routes = [
         (m) => m.AccountShellModule
       ),
   },
+  {
+    path: 'categories',
+    data: { title: 'categories' },
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./category/feature/category-shell/category-shell.module').then(
+        (m) => m.CategoryShellModule
+      ),
+  },
 
   { path: '**', redirectTo: 'dashboard' },
 ];

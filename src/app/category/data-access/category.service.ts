@@ -164,6 +164,54 @@ export class CategoryService {
       });
   }
 
+  sortCategories(sortedCategories: { id: string; order: number }[]) {
+    this.updateStatus(StatusType.Loading);
+    this.http
+      .post(this.baseUrl + '/sorted-categories', sortedCategories)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          const state = this._state$.value;
+          // update the order of the sorted categories
+          const categories = state.categories.map((x) => {
+            const sortedCategory = sortedCategories.find((y) => y.id === x.id);
+            if (sortedCategory) {
+              return {
+                ...x,
+                order: sortedCategory.order,
+              };
+            }
+            return x;
+          });
+          this._state$.next({
+            ...this._state$.value,
+            categories,
+            status: StatusType.Success,
+            errors: [],
+          });
+        },
+        error: (error: HttpErrorResponse) => {
+          this._state$.next({
+            ...this._state$.value,
+            status: StatusType.Error,
+            errors: [error.error?.detail || 'Something went wrong'],
+          });
+          console.error(error);
+        },
+      });
+  }
+
+  setCategoryForEdit(
+    editMode: 'create' | 'update',
+    category: CategoryResponse | null
+  ) {
+    this._state$.next({
+      ...this._state$.value,
+      editMode,
+      selectedCategory: category,
+    });
+  }
+
   private updateStatus(status: StatusType, errors: string[] = []) {
     this._state$.next({
       ...this._state$.value,
