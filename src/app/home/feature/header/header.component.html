@@ -1,4 +1,4 @@
-<p-toolbar styleClass="bg-gray-900 shadow-2 p-3 border-noround border-none" *ngIf="authState$ | async; let authState">
+<p-toolbar styleClass="surface-card shadow-2 p-3 border-noround border-none" *ngIf="authState$ | async; let authState">
   <div class="p-toolbar-group-start">
     <p-button icon="pi pi-bars" class="mr-2" [rounded]="true" [text]="true" size="large"
       (click)="uiService.sidebarVisible = !uiService.sidebarVisible" />

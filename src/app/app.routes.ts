@@ -8,7 +8,7 @@ export const routes: Routes = [
     data: { title: 'dashboard' },
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./expenses/feature/dashboard/dashboard.component').then(
+      import('./transaction/feature/dashboard/dashboard.component').then(
         (m) => m.DashboardComponent
       ),
   },

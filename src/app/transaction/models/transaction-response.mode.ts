@@ -2,7 +2,7 @@ export interface TransactionResponse {
   id: string;
   amount: number;
   description: string;
-  category: {
+  category?: {
     id: string;
     value: string;
   };

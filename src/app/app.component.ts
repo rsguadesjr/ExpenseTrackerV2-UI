@@ -68,9 +68,11 @@ export class AppComponent {
       )
       .subscribe((state) => {
         console.log('Account State', state);
+        const date = new Date();
         this.transactionService.loadTransactions({
-          year: new Date().getFullYear(),
-          month: new Date().getMonth() + 1,
+          year: date.getFullYear(),
+          month: date.getMonth() + 1,
+          timezoneOffset: -date.getTimezoneOffset(),
           accountId: state.currentAccount?.id,
         });
       });

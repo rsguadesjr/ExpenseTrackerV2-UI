@@ -28,7 +28,14 @@
       </ng-template>
       <ng-template pTemplate="body" let-transaction>
         <tr>
-          <td class="p-2 px-4">{{ transaction.category?.value }}</td>
+          <td class="p-2 px-4">
+            @if (transaction.category){
+            {{ transaction.category?.value }}
+            }
+            @else {
+            <span class="font-italic text-color-secondary">Uncategorized</span>
+            }
+          </td>
           <td class="p-2">{{ transaction.amount }}</td>
           <td class="p-2">{{ transaction.transactionDate | date }}</td>
           <td class="p-2">

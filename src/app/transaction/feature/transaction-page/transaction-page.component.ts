@@ -76,6 +76,7 @@ export class TransactionPageComponent implements OnInit {
         this.transactionService.loadTransactions({
           year: event.startDate.getFullYear(),
           month: event.startDate.getMonth() + 1,
+          timezoneOffset: -new Date().getTimezoneOffset(),
           accountId: this.accountService.stateValue.currentAccount?.id,
         });
       });
