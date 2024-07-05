@@ -1,4 +1,4 @@
-<p-toolbar [formGroup]="filterForm" styleClass="surface-ground">
+<p-toolbar [formGroup]="filterForm" styleClass="surface-card">
   <div class="flex justify-content-start gap-2 align-items-start">
     <p-dropdown [options]="viewModes" formControlName="viewMode" optionLabel="name" placeholder="Select a View" />
     @if (filterForm.get('viewMode')?.value?.value === 'Month') {

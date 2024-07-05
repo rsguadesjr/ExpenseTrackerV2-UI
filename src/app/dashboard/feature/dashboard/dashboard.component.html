@@ -1,7 +1,7 @@
-<div class="p-5">
+<div>
   <div class="grid" *ngIf="state$ | async; let state">
     <div class="col-12">
-      <div class="surface-card shadow-2 border-round p-4 flex justify-content-between">
+      <div class="surface-card shadow-2 border-round p-3 flex justify-content-between">
         <div class="flex align-items-center">Account: <span class="font-bold text-xl ml-2 text-primary"
             *ngIf="currentAccount$ | async; let currentAccount">{{ currentAccount.name }}</span>
         </div>

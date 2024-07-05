@@ -52,6 +52,13 @@ export class HeaderComponent {
   authState$ = this.authService.authState;
   items: MenuItem[] = [
     {
+      label: 'Manage Accounts',
+      icon: 'pi pi-user-edit',
+      command: async () => {
+        this.router.navigate(['/accounts']);
+      },
+    },
+    {
       label: 'Sign Out',
       icon: 'pi pi-sign-out',
       command: async () => {

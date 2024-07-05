@@ -6,6 +6,7 @@ import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../auth/data-access/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,6 +17,8 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class SidebarComponent {
   private router = inject(Router);
+  private authService = inject(AuthService);
+
   @ViewChild('sidebarRef') sidebarRef!: Sidebar;
   uiService = inject(UiService);
 
@@ -55,5 +58,13 @@ export class SidebarComponent {
   navigate(url: string): void {
     this.uiService.sidebarVisible = false;
     this.router.navigateByUrl(url);
+  }
+
+  async signOut() {
+    this.uiService.sidebarVisible = false;
+    await this.authService.signOut();
+    this.router.navigate(['/login'], {
+      queryParams: { returnUrl: this.router.url },
+    });
   }
 }
