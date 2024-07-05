@@ -7,6 +7,7 @@ import { TransactionState } from '../models/transaction-state.mode';
 import { StatusType } from '../../core/constants/status-type';
 import { TransactionResponse } from '../models/transaction-response.mode';
 import { TransactionRequest } from '../models/transaction-request.model';
+import { TransactionActionType } from '../constants/transaction-action-type';
 
 @Injectable({
   providedIn: 'root',
@@ -41,6 +42,7 @@ export class TransactionService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Success,
+            action: TransactionActionType.LoadTransactions,
             transactions: response,
             errors: [],
           });
@@ -71,6 +73,7 @@ export class TransactionService {
           this._state$.next({
             ...state,
             status: StatusType.Success,
+            action: TransactionActionType.LoadTransactionById,
             selectedTransaction: response,
             errors: [],
           });
@@ -96,6 +99,7 @@ export class TransactionService {
           this._state$.next({
             transactions: [response, ...this._state$.value.transactions],
             status: StatusType.Success,
+            action: TransactionActionType.CreateTransaction,
             selectedTransaction: response,
             errors: [],
           });
@@ -126,6 +130,7 @@ export class TransactionService {
           this._state$.next({
             ...state,
             status: StatusType.Success,
+            action: TransactionActionType.UpdateTransaction,
             selectedTransaction: response,
             errors: [],
           });
@@ -153,6 +158,8 @@ export class TransactionService {
             ...state,
             transactions,
             status: StatusType.Success,
+            action: TransactionActionType.DeleteTransaction,
+            selectedTransaction: { id } as TransactionResponse,
             errors: [],
           });
         },
@@ -175,6 +182,7 @@ export class TransactionService {
       ...this._state$.value,
       editMode,
       selectedTransaction: transaction,
+      status: StatusType.Idle,
     });
   }
 

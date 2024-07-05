@@ -11,6 +11,9 @@ import { AccountService } from './account/data-access/account.service';
 import { CategoryService } from './category/data-access/category.service';
 import { StatusType } from './core/constants/status-type';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { DashboardService } from './dashboard/services/dashboard.service';
+import { endOfMonth, startOfMonth } from 'date-fns';
+import { TransactionActionType } from './transaction/constants/transaction-action-type';
 
 @Component({
   selector: 'app-root',
@@ -27,9 +30,10 @@ import { ProgressBarModule } from 'primeng/progressbar';
 })
 export class AppComponent {
   private authService = inject(AuthService);
-  private transactionService = inject(TransactionService);
+  transactionService = inject(TransactionService);
   private accountService = inject(AccountService);
   private categoryService = inject(CategoryService);
+  dashboardService = inject(DashboardService);
 
   title = 'ExpenseTracker';
   isAuthenticated$ = this.authService.isAuthenticated$;
@@ -58,7 +62,6 @@ export class AppComponent {
         }
       });
 
-    // subscribe to account changes except wh
     this.accountService.state$
       .pipe(
         filter(
@@ -67,7 +70,9 @@ export class AppComponent {
         takeUntilDestroyed()
       )
       .subscribe((state) => {
-        console.log('Account State', state);
+        // reset previous account's dashboard data
+        this.dashboardService.resetState();
+
         const date = new Date();
         this.transactionService.loadTransactions({
           year: date.getFullYear(),
@@ -75,6 +80,43 @@ export class AppComponent {
           timezoneOffset: -date.getTimezoneOffset(),
           accountId: state.currentAccount?.id,
         });
+      });
+
+    this.transactionService.state$
+      .pipe(
+        filter((state) => state.status === StatusType.Success),
+        takeUntilDestroyed()
+      )
+      .subscribe((state) => {
+        console.log('transaction state', {
+          action: state.action,
+          selectedTransaction: state.selectedTransaction,
+        });
+        switch (state.action) {
+          case TransactionActionType.LoadTransactions:
+            this.dashboardService.setTransactions(state.transactions);
+            break;
+          case TransactionActionType.LoadTransactionById:
+            this.dashboardService.updateOrInsertTransaction(
+              state.selectedTransaction!
+            );
+            break;
+          case TransactionActionType.CreateTransaction:
+            this.dashboardService.updateOrInsertTransaction(
+              state.selectedTransaction!
+            );
+            break;
+          case TransactionActionType.UpdateTransaction:
+            this.dashboardService.updateOrInsertTransaction(
+              state.selectedTransaction!
+            );
+            break;
+          case TransactionActionType.DeleteTransaction:
+            this.dashboardService.removeTransaction(
+              state.selectedTransaction!.id
+            );
+            break;
+        }
       });
   }
 }

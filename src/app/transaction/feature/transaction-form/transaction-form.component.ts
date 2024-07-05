@@ -50,8 +50,8 @@ export class TransactionFormComponent {
 
   form = new FormGroup({
     id: new FormControl<string | null>(null),
-    description: new FormControl('', Validators.required),
-    categoryId: new FormControl('', Validators.required),
+    description: new FormControl<string | null>(null, Validators.required),
+    categoryId: new FormControl<string | null>(null, Validators.required),
     amount: new FormControl<number | null>(null, [
       Validators.required,
       Validators.min(0),

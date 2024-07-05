@@ -3,25 +3,31 @@
     <div class="flex flex-column gap-2 p-fluid">
       <label for="amount">Amount</label>
       <p-inputNumber id="amount" formControlName="amount" />
-      <small class="amount-errors" class="text-red-500" *ngIf="form.get('amount')?.errors?.required"></small>
+      <small class="amount-errors" class="text-red-500"
+        *ngIf="form.get('amount')?.touched && form.get('amount')?.errors?.required">Amount is
+        required</small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
       <label for="description">Description</label>
       <input pInputText id="description" formControlName="description" />
-      <small class="description-errors" class="text-red-500" *ngIf="form.get('description')?.errors?.required"></small>
+      <small class="description-errors" class="text-red-500"
+        *ngIf="form.get('amount')?.touched && form.get('description')?.errors?.required">Description is required
+      </small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
       <label for="categoryId">Category</label>
       <p-dropdown id="categoryId" formControlName="categoryId" [options]="(categories$ | async) ?? []"
         optionLabel="name" optionValue="id"></p-dropdown>
-      <small class="category-errors" class="text-red-500" *ngIf="form.get('categoryId')?.errors?.required"></small>
+      <small class="category-errors" class="text-red-500"
+        *ngIf="form.get('amount')?.touched && form.get('categoryId')?.errors?.required">Category is
+        required</small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
       <label for="transactionDate">Date</label>
       <p-calendar id="transactionDate" formControlName="transactionDate" dateFormat="dd-M-yy"
         appendTo="body"></p-calendar>
       <small class="transactionDate-errors" class="text-red-500"
-        *ngIf="form.get('transactionDate')?.errors?.required"></small>
+        *ngIf="form.get('amount')?.touched && form.get('transactionDate')?.errors?.required">Date is rquired</small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
       <label htmlFor="form-tags">Tags</label>

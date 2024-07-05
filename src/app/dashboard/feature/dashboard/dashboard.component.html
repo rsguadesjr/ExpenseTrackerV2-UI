@@ -1,0 +1,99 @@
+<div class="p-5">
+  <div class="grid" *ngIf="state$ | async; let state">
+    <div class="col-12">
+      <div class="surface-card shadow-2 border-round p-4 flex justify-content-between">
+        <div class="flex align-items-center">Account: <span class="font-bold text-xl ml-2 text-primary"
+            *ngIf="currentAccount$ | async; let currentAccount">{{ currentAccount.name }}</span>
+        </div>
+
+        <div *ngIf="transctionsByDate$ | async as transctionsByDate">
+          Showing data from
+          <span class="text-green-500 font-medium">{{ transctionsByDate[0].date | date : 'longDate' }}</span>
+          to
+          <span class="text-green-500 font-medium">{{ transctionsByDate[transctionsByDate.length - 1].date | date :
+            'longDate' }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 lg:col-4">
+      <div class="surface-card h-full shadow-2 p-3 border-1 border-50 border-round">
+        <div class="flex justify-content-between mb-3">
+          <div>
+            <span class="block text-500 font-medium mb-3">Total Expenses</span>
+            <div class="text-orange-500 font-bold text-xl">{{ state.totalAmount | currency: 'PHP' }}</div>
+          </div>
+        </div>
+        @if (state.transactions.length > 0) {
+        <span class="text-500">Total amount from </span>
+        <span class="text-green-500 font-medium mx-1">{{ state.transactions.length }}</span>
+        <span class="text-500">{{ state.transactions.length > 1 ? 'transactions' : 'transaction'}}</span>
+        }
+        @else {
+        <span class="text-green-500 font-medium">No transactions yet</span>
+        }
+      </div>
+    </div>
+    <div class="col-12 lg:col-4" *ngIf="highestDailyTransaction$ | async as highestDailyTransaction">
+      <div class="surface-card h-full shadow-2 p-3 border-1 border-50 border-round">
+        <div class="flex justify-content-between mb-3">
+          <div>
+            <span class="block text-500 font-medium mb-3">Highest Single Day Expense</span>
+            <div class="text-orange-500 font-bold text-xl">{{ highestDailyTransaction.totalAmount | currency: 'PHP' }}
+            </div>
+          </div>
+        </div>
+        @if (highestDailyTransaction && highestDailyTransaction.totalAmount > 0) {
+        <span class="text-500">Total spent on </span>
+        <span class="text-green-500 font-medium mx-1">{{ highestDailyTransaction.date | date : 'longDate'}}</span>
+        }
+        @else {
+        <span class="text-green-500 font-medium">No transactions yet for this period</span>
+        }
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-4" *ngIf="highestCategoryTransaction$ | async as highestCategoryTransaction">
+      <div class="surface-card h-fullshadow-2 p-3 border-1 border-50 border-round">
+        <div class="flex justify-content-between mb-3">
+          <div>
+            <span class="block text-500 font-medium mb-3">Highest Spending Category</span>
+            <div class="text-orange-500 font-bold text-xl">{{ highestCategoryTransaction.name }}</div>
+          </div>
+        </div>
+
+        <span class="text-500">Total of </span>
+        <span class="text-green-500 font-medium mx-1">{{ highestCategoryTransaction.totalAmount | currency: 'PHP'
+          }}</span>
+        <span class="text-500">spent </span>
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-6">
+      <app-dashboard-transaction-list [transactions]="state.recentTransactions" title="Recent Transactions">
+        <div menu>
+          <p-menu #menu [model]="tableMenuItems" [popup]="true" />
+          <p-button [rounded]="true" [text]="true" (click)="menu.toggle($event)" icon="pi pi-ellipsis-v" />
+        </div>
+      </app-dashboard-transaction-list>
+    </div>
+
+    <div class="col-12 lg:col-6">
+      <div class="surface-card shadow-2 border-round p-4 h-full">
+        <div class="flex align-items-center justify-content-between mb-4">
+          <div class="text-900 font-medium text-xl">Transaction Graph</div>
+        </div>
+        <p-chart type="line" [data]="chartData$ | async" [options]="chartOptions$ | async" />
+      </div>
+    </div>
+
+    <div class="col-12 lg:col-6">
+      <app-dashboard-transaction-list [transactions]="(topTransactions$ | async) || []"
+        title="Top 5 Transactions"></app-dashboard-transaction-list>
+    </div>
+
+    <div class="col-12 lg:col-6">
+      <app-dashboard-category-summary title="Categories"
+        [data]="(categorizedData$ | async) ?? []"></app-dashboard-category-summary>
+    </div>
+  </div>
+</div>
