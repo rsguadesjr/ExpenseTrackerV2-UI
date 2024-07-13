@@ -35,7 +35,7 @@ export class AuthService {
   private jwtHelper = new JwtHelperService();
 
   private firebaseUser$ = new BehaviorSubject<User | null>(null);
-  private authState$ = new BehaviorSubject<AuthState>({
+  private _authState$ = new BehaviorSubject<AuthState>({
     status: StatusType.Idle,
   });
 
@@ -60,7 +60,7 @@ export class AuthService {
 
   // check if user is authenticated via firebase and also the backend api
   isAuthenticated$ = this.isFirebaseAuthenticated$.pipe(
-    combineLatestWith(this.authState$),
+    combineLatestWith(this._authState$),
     map(
       ([isFirebaseAuthenticated, authState]) =>
         isFirebaseAuthenticated && !!authState.token
@@ -68,7 +68,7 @@ export class AuthService {
   );
 
   login(request: LoginRequest) {
-    this.authState$.next({
+    this._authState$.next({
       status: StatusType.Loading,
     });
     return this.httpClient
@@ -81,7 +81,7 @@ export class AuthService {
           await this.generateAccessToken(true);
         },
         error: (error: HttpErrorResponse) => {
-          this.authState$.next({
+          this._authState$.next({
             status: StatusType.Error,
             errors: [error.error?.detail || 'Something went wrong'],
           });
@@ -96,7 +96,7 @@ export class AuthService {
     );
     if (result) {
       localStorage.setItem('access_token', result.token);
-      this.authState$.next({
+      this._authState$.next({
         status: StatusType.Success,
         user: result.claims,
         token: result.token,
@@ -109,24 +109,24 @@ export class AuthService {
 
   async signOut() {
     localStorage.removeItem('access_token');
-    this.authState$.next({
+    this._authState$.next({
       status: StatusType.Idle,
       errors: [],
     });
     await this.firebaseAuth.signOut();
   }
 
-  get authState(): Observable<AuthState> {
-    return this.authState$.asObservable();
+  get authState$(): Observable<AuthState> {
+    return this._authState$.asObservable();
   }
 
   get authStateValue(): AuthState {
-    return this.authState$.value;
+    return this._authState$.value;
   }
 
   setStatus(status: StatusType, errors?: string | string[]) {
-    this.authState$.next({
-      ...this.authState$.value,
+    this._authState$.next({
+      ...this._authState$.value,
       status,
       errors: errors ? (Array.isArray(errors) ? errors : [errors]) : [],
     });
@@ -145,7 +145,7 @@ export class AuthService {
       this.jwtHelper.decodeToken(accessToken);
       const isExpired = this.jwtHelper.isTokenExpired(accessToken);
       if (!isExpired) {
-        this.authState$.next({
+        this._authState$.next({
           status: StatusType.Success,
           token: accessToken,
           user: this.jwtHelper.decodeToken(accessToken),

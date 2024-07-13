@@ -24,6 +24,8 @@ import { PasswordModule } from 'primeng/password';
 import { DividerModule } from 'primeng/divider';
 import { Message } from 'primeng/api';
 import { StatusType } from '../../../core/constants/status-type';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 @Component({
   selector: 'app-login',
@@ -37,6 +39,8 @@ import { StatusType } from '../../../core/constants/status-type';
     MessagesModule,
     PasswordModule,
     DividerModule,
+    IconFieldModule,
+    InputIconModule,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
@@ -52,7 +56,7 @@ export class LoginComponent {
     password: new FormControl('', [Validators.required]),
   });
 
-  errorMessages$ = this.authService.authState.pipe(
+  errorMessages$ = this.authService.authState$.pipe(
     map((authState) => authState.errors || []),
     map((errors) =>
       errors.map(
@@ -62,7 +66,7 @@ export class LoginComponent {
     takeUntilDestroyed()
   );
 
-  authState$ = this.authService.authState;
+  authState$ = this.authService.authState$;
 
   constructor() {
     this.authService.isAuthenticated$.pipe(takeUntilDestroyed()).subscribe({

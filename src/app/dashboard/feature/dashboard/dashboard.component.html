@@ -1,7 +1,7 @@
 <div>
   <div class="grid" *ngIf="state$ | async; let state">
     <div class="col-12">
-      <div class="surface-card shadow-2 border-round p-3 flex justify-content-between">
+      <div class="surface-card shadow-2 border-round p-3  border-1 border-50 flex justify-content-between">
         <div class="flex align-items-center">Account: <span class="font-bold text-xl ml-2 text-primary"
             *ngIf="currentAccount$ | async; let currentAccount">{{ currentAccount.name }}</span>
         </div>
@@ -78,7 +78,7 @@
     </div>
 
     <div class="col-12 lg:col-6">
-      <div class="surface-card shadow-2 border-round p-4 h-full">
+      <div class="surface-card shadow-2 border-round border-1 border-50  p-4 h-full">
         <div class="flex align-items-center justify-content-between mb-4">
           <div class="text-900 font-medium text-xl">Transaction Graph</div>
         </div>

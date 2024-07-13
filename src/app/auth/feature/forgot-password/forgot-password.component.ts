@@ -10,6 +10,9 @@ import {
 import { RouterModule } from '@angular/router';
 import { Message } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
 import { MessagesModule } from 'primeng/messages';
 
 @Component({
@@ -21,6 +24,9 @@ import { MessagesModule } from 'primeng/messages';
     MessagesModule,
     ButtonModule,
     RouterModule,
+    IconFieldModule,
+    InputIconModule,
+    InputTextModule,
   ],
   templateUrl: './forgot-password.component.html',
   styleUrl: './forgot-password.component.scss',

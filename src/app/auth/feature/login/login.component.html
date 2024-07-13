@@ -1,16 +1,17 @@
 <div class="flex flex-wrap justify-content-center align-items-center w-full min-h-screen">
-  <div class="auth-form border-round bg-black-alpha-40 " *ngIf="authState$ | async; let authState">
-    <span class="text-center border-round">
-      <p class="text-4xl">Login</p>
-    </span>
+  <ng-container *ngIf="authState$ | async; let authState">
     <form [formGroup]="loginForm" (ngSubmit)="loginWithPassword()"
-      class="flex flex-column gap-2 p-4 border-round-bottom surface-ground">
+      class="auth-form border-1 border-50 surface-card flex flex-column py-7 px-4 md:px-7 surface-card border-round-xl">
+      <p class="text-xl mt-0 mb-4 font-bold">Login</p>
 
       <p-messages *ngIf="errorMessages$ | async; let errorMessages" [value]="errorMessages" [enableService]="false" />
 
-      <div class="flex flex-column gap-2">
-        <label for="email">Email</label>
-        <input type="email" id="email" formControlName="email" pInputText class="p-inputtext" />
+      <div class="flex flex-column gap-2 p-fluid mb-4">
+        <p-iconField iconPosition="left">
+          <p-inputIcon styleClass="pi pi-user" />
+          <input type="email" id="email" formControlName="email" pInputText placeholder="Email"
+            styleClass="surface-ground" />
+        </p-iconField>
         <ng-container *ngIf="loginForm.get('email')?.errors && loginForm.get('email')?.touched">
           <small class="email-errors" class="text-red-500" *ngIf="loginForm.get('email')?.errors?.required">
             Email is required
@@ -20,18 +21,24 @@
           </small>
         </ng-container>
       </div>
-      <div class="p-fluid flex flex-column gap-2">
-        <label for="password">Password</label>
-        <p-password type="password" id="password" formControlName="password" [feedback]="false" [toggleMask]="true" />
+      <div class="flex flex-column gap-2 p-fluid mb-4">
+        <p-iconField iconPosition="left">
+          <p-inputIcon styleClass="pi pi-key z-2" />
+          <p-password type="password" id="password" formControlName="password" [toggleMask]="true" />
+        </p-iconField>
         <ng-container *ngIf="loginForm.get('password')?.errors && loginForm.get('password')?.touched">
           <small class="password-errors" class="text-red-500" *ngIf="loginForm.get('password')?.errors?.required">
             Password is required
           </small>
         </ng-container>
       </div>
+      <div class="flex flex-row justify-content-between mb-4">
+        <a routerLink="/forgot-password" class="no-underline text-sm">Forgot Password?</a>
+        <a routerLink="/register" class="no-underline text-sm">Register</a>
+      </div>
 
       @if (authState.status === 'loading') {
-      <div class="mt-4 mb-6 p-fluid">
+      <div class="mb-6 p-fluid">
         <button type="submit" class="p-button p-button-success" pButton pRipple>
           <span class="flex align-items-center justify-content-center w-full gap-2">
             <i class="pi pi-spin pi-spinner" style="font-size: 1.5rem"></i>
@@ -41,20 +48,20 @@
       </div>
       }
       @else {
-      <div class="mt-4 mb-6 p-fluid">
+      <div class="mb-2 p-fluid">
         <button type="submit" class="p-button p-button-success font-bold" label="Sign in" pButton pRipple></button>
       </div>
-      <div class="flex flex-row justify-content-between">
+      <!-- <div class="flex flex-row justify-content-between">
         <a routerLink="/forgot-password">Forgot Password?</a>
         <span>Don't have an account? <a routerLink="/register">Register</a></span>
-      </div>
+      </div> -->
       <p-divider align="center" type="dashed"></p-divider>
       <div class="flex flex-column justify-content-center align-items-center gap-2 m-2">
-        <span class="text-center">or you can sign in with</span>
+        <span class="text-center text-sm">or you can sign in with</span>
         <p-button icon="pi pi-google" [rounded]="true" severity="secondary" (click)="loginWithGoogle()" />
       </div>
       }
 
     </form>
-  </div>
+  </ng-container>
 </div>

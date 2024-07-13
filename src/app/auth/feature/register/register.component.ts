@@ -21,6 +21,10 @@ import {
   updateCurrentUser,
   updateProfile,
 } from '@angular/fire/auth';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { PasswordModule } from 'primeng/password';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-register',
@@ -31,6 +35,10 @@ import {
     RouterModule,
     MessagesModule,
     ButtonModule,
+    InputTextModule,
+    IconFieldModule,
+    InputIconModule,
+    PasswordModule,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.scss',

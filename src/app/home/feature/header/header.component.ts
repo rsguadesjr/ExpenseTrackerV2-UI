@@ -49,7 +49,7 @@ export class HeaderComponent {
     map((state) => state.accounts.filter((a) => a.isActive))
   );
   selectedAccount!: string;
-  authState$ = this.authService.authState;
+  authState$ = this.authService.authState$;
   items: MenuItem[] = [
     {
       label: 'Manage Accounts',
