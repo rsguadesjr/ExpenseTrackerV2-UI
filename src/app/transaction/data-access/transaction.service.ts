@@ -8,6 +8,7 @@ import { StatusType } from '../../core/constants/status-type';
 import { TransactionResponse } from '../models/transaction-response.mode';
 import { TransactionRequest } from '../models/transaction-request.model';
 import { TransactionActionType } from '../constants/transaction-action-type';
+import { parseError } from '../../core/helpers/error-helper';
 
 @Injectable({
   providedIn: 'root',
@@ -51,7 +52,7 @@ export class TransactionService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -82,7 +83,7 @@ export class TransactionService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -108,7 +109,7 @@ export class TransactionService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -139,7 +140,7 @@ export class TransactionService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -167,7 +168,7 @@ export class TransactionService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },

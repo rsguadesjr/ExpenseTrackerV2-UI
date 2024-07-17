@@ -24,6 +24,7 @@ import {
 } from '@angular/fire/auth';
 import { LoginRequest } from '../models/login-request';
 import { StatusType } from '../../core/constants/status-type';
+import { parseError } from '../../core/helpers/error-helper';
 
 @Injectable({
   providedIn: 'root',
@@ -83,7 +84,7 @@ export class AuthService {
         error: (error: HttpErrorResponse) => {
           this._authState$.next({
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },

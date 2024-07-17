@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, ViewChild, inject } from '@angular/core';
 import { Sidebar, SidebarModule } from 'primeng/sidebar';
-import { UiService } from '../../services/ui-service';
+import { UiService } from '../../../core/services/ui-service';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';

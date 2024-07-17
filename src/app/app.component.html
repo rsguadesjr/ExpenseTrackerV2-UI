@@ -1,5 +1,5 @@
 <app-header *ngIf="isAuthenticated$ | async"></app-header>
-<p-progressBar *ngIf="showProgressBar$ | async;else placeholderProgressBar" mode="indeterminate"
+<p-progressBar *ngIf="showProgressBar$ | async; else placeholderProgressBar" mode="indeterminate"
   [style]="{ height: '6px' }" />
 
 <ng-template #placeholderProgressBar>
@@ -7,7 +7,7 @@
     &nbsp;
   </div>
 </ng-template>
-
+<p-toast />
 <app-sidebar></app-sidebar>
 <div class="p-4">
   <router-outlet></router-outlet>

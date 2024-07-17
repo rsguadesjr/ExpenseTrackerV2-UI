@@ -8,7 +8,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { AuthService } from '../../../auth/data-access/auth.service';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { UiService } from '../../services/ui-service';
+import { UiService } from '../../../core/services/ui-service';
 import { AccountService } from '../../../account/data-access/account.service';
 import { DropdownModule } from 'primeng/dropdown';
 import { map } from 'rxjs';

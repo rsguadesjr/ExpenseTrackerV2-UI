@@ -6,6 +6,7 @@ import { BehaviorSubject, take } from 'rxjs';
 import { AccountState } from '../models/account-state.model';
 import { AccountResponse } from '../models/account-response.model';
 import { AccountRequest } from '../models/account-request.model';
+import { parseError } from '../../core/helpers/error-helper';
 
 @Injectable({
   providedIn: 'root',
@@ -55,7 +56,7 @@ export class AccountService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
         },
       });
@@ -82,7 +83,7 @@ export class AccountService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
         },
       });
@@ -118,7 +119,7 @@ export class AccountService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
         },
       });
@@ -166,7 +167,7 @@ export class AccountService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
         },
       });
@@ -202,7 +203,7 @@ export class AccountService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },

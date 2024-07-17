@@ -14,12 +14,14 @@ import { filter, take } from 'rxjs';
 import { StatusType } from '../../../core/constants/status-type';
 import { CardModule } from 'primeng/card';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-account-management',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     TableModule,
     ChipModule,
     ButtonModule,

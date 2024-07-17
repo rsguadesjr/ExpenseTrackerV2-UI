@@ -5,7 +5,14 @@ import { CommonModule } from '@angular/common';
 import { HeaderComponent } from './home/feature/header/header.component';
 import { SidebarComponent } from './home/feature/sidebar/sidebar.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { combineLatestWith, filter, map } from 'rxjs';
+import {
+  combineLatest,
+  combineLatestWith,
+  filter,
+  forkJoin,
+  map,
+  startWith,
+} from 'rxjs';
 import { TransactionService } from './transaction/data-access/transaction.service';
 import { AccountService } from './account/data-access/account.service';
 import { CategoryService } from './category/data-access/category.service';
@@ -14,6 +21,9 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { DashboardService } from './dashboard/services/dashboard.service';
 import { endOfMonth, startOfMonth } from 'date-fns';
 import { TransactionActionType } from './transaction/constants/transaction-action-type';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { UiService } from './core/services/ui-service';
 
 @Component({
   selector: 'app-root',
@@ -24,29 +34,24 @@ import { TransactionActionType } from './transaction/constants/transaction-actio
     HeaderComponent,
     SidebarComponent,
     ProgressBarModule,
+    ToastModule,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
   private authService = inject(AuthService);
-  transactionService = inject(TransactionService);
+  private transactionService = inject(TransactionService);
   private accountService = inject(AccountService);
   private categoryService = inject(CategoryService);
-  dashboardService = inject(DashboardService);
+  private dashboardService = inject(DashboardService);
+  private messageService = inject(MessageService);
+  private uiService = inject(UiService);
 
   title = 'ExpenseTracker';
   isAuthenticated$ = this.authService.isAuthenticated$;
 
-  showProgressBar$ = this.transactionService.state$.pipe(
-    combineLatestWith(this.accountService.state$, this.categoryService.state$),
-    map(
-      ([transactionState, accountState, categoryState]) =>
-        transactionState.status === StatusType.Loading ||
-        accountState.status === StatusType.Loading ||
-        categoryState.status === StatusType.Loading
-    )
-  );
+  showProgressBar$ = this.uiService.showProgressBar$.asObservable();
 
   constructor() {
     this.isAuthenticated$
@@ -117,6 +122,36 @@ export class AppComponent {
             );
             break;
         }
+      });
+
+    combineLatest([
+      this.transactionService.state$.pipe(
+        filter((state) => state.status === StatusType.Error),
+        map((state) => state.errors),
+        startWith([])
+      ),
+      this.categoryService.state$.pipe(
+        filter((state) => state.status === StatusType.Error),
+        map((state) => state.errors),
+        startWith([])
+      ),
+      this.accountService.state$.pipe(
+        filter((state) => state.status === StatusType.Error),
+        map((state) => state.errors),
+        startWith([])
+      ),
+    ])
+      .pipe(
+        map((errors) => errors.flat()),
+        filter((errors) => errors.length > 0)
+      )
+      .subscribe((errors) => {
+        console.log(errors);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Message Content',
+        });
       });
   }
 }

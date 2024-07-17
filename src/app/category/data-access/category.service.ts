@@ -6,6 +6,7 @@ import { StatusType } from '../../core/constants/status-type';
 import { CategoryState } from '../models/category-state.model';
 import { CategoryResponse } from '../models/category-response.model';
 import { CategoryRequest } from '../models/category-request.model';
+import { parseError } from '../../core/helpers/error-helper';
 
 @Injectable({
   providedIn: 'root',
@@ -49,7 +50,7 @@ export class CategoryService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -77,7 +78,7 @@ export class CategoryService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -102,7 +103,7 @@ export class CategoryService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -130,7 +131,7 @@ export class CategoryService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -157,7 +158,7 @@ export class CategoryService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
@@ -194,7 +195,7 @@ export class CategoryService {
           this._state$.next({
             ...this._state$.value,
             status: StatusType.Error,
-            errors: [error.error?.detail || 'Something went wrong'],
+            errors: parseError(error),
           });
           console.error(error);
         },
