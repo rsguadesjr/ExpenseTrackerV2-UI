@@ -7,12 +7,13 @@ import { AccountState } from '../models/account-state.model';
 import { AccountResponse } from '../models/account-response.model';
 import { AccountRequest } from '../models/account-request.model';
 import { parseError } from '../../core/helpers/error-helper';
+import { HttpClientService } from '../../services/http-client.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AccountService {
-  private http = inject(HttpClient);
+  private http = inject(HttpClientService);
   private baseUrl = environment.API_BASE_URL + 'api/accounts';
 
   private _state$ = new BehaviorSubject<AccountState>({

@@ -24,6 +24,8 @@ import { TransactionActionType } from './transaction/constants/transaction-actio
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { UiService } from './core/services/ui-service';
+import { HttpErrorReporterService } from './services/http-error-reporter.service';
+import { parseError } from './core/helpers/error-helper';
 
 @Component({
   selector: 'app-root',
@@ -47,6 +49,7 @@ export class AppComponent {
   private dashboardService = inject(DashboardService);
   private messageService = inject(MessageService);
   private uiService = inject(UiService);
+  private httpErrorReporterService = inject(HttpErrorReporterService);
 
   title = 'ExpenseTracker';
   isAuthenticated$ = this.authService.isAuthenticated$;
@@ -124,33 +127,17 @@ export class AppComponent {
         }
       });
 
-    combineLatest([
-      this.transactionService.state$.pipe(
-        filter((state) => state.status === StatusType.Error),
-        map((state) => state.errors),
-        startWith([])
-      ),
-      this.categoryService.state$.pipe(
-        filter((state) => state.status === StatusType.Error),
-        map((state) => state.errors),
-        startWith([])
-      ),
-      this.accountService.state$.pipe(
-        filter((state) => state.status === StatusType.Error),
-        map((state) => state.errors),
-        startWith([])
-      ),
-    ])
-      .pipe(
-        map((errors) => errors.flat()),
-        filter((errors) => errors.length > 0)
-      )
-      .subscribe((errors) => {
-        console.log(errors);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Success',
-          detail: 'Message Content',
+    this.httpErrorReporterService
+      .geterror$()
+      .pipe(takeUntilDestroyed())
+      .subscribe((error) => {
+        parseError(error).forEach((message) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: message,
+            life: 3000,
+          });
         });
       });
   }

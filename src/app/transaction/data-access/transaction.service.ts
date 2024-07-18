@@ -9,12 +9,13 @@ import { TransactionResponse } from '../models/transaction-response.mode';
 import { TransactionRequest } from '../models/transaction-request.model';
 import { TransactionActionType } from '../constants/transaction-action-type';
 import { parseError } from '../../core/helpers/error-helper';
+import { HttpClientService } from '../../services/http-client.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TransactionService {
-  private httpClient = inject(HttpClient);
+  private http = inject(HttpClientService);
   private baseUrl = environment.API_BASE_URL + 'api/transactions';
 
   private _state$ = new BehaviorSubject<TransactionState>({
@@ -35,8 +36,8 @@ export class TransactionService {
 
   loadTransactions(query: TrasactionQuery) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
-      .get<TransactionResponse[]>(this.baseUrl, { params: { ...query } })
+    this.http
+      .get<TransactionResponse[]>(this.baseUrl, { ...query })
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -61,7 +62,7 @@ export class TransactionService {
 
   loadTransactionById(id: string) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
+    this.http
       .get<TransactionResponse>(`${this.baseUrl}/${id}`)
       .pipe(take(1))
       .subscribe({
@@ -92,7 +93,7 @@ export class TransactionService {
 
   createTransaction(request: TransactionRequest) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
+    this.http
       .post<TransactionResponse>(this.baseUrl, request)
       .pipe(take(1))
       .subscribe({
@@ -118,7 +119,7 @@ export class TransactionService {
 
   updateTransaction(request: TransactionRequest) {
     this.updateStatus(StatusType.Loading);
-    this.httpClient
+    this.http
       .put<TransactionResponse>(`${this.baseUrl}/${request.id}`, request)
       .pipe(take(1))
       .subscribe({
@@ -148,7 +149,7 @@ export class TransactionService {
   }
 
   deleteTransaction(id: string) {
-    this.httpClient
+    this.http
       .delete<TransactionResponse>(`${this.baseUrl}/${id}`)
       .pipe(take(1))
       .subscribe({
