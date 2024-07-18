@@ -25,12 +25,13 @@ import {
 import { LoginRequest } from '../models/login-request';
 import { StatusType } from '../../core/constants/status-type';
 import { parseError } from '../../core/helpers/error-helper';
+import { HttpClientService } from '../../core/services/http-client.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private httpClient = inject(HttpClient);
+  private http = inject(HttpClientService);
   private baseUrl = environment.API_BASE_URL + 'auth';
   private firebaseAuth: Auth = inject(Auth);
   private jwtHelper = new JwtHelperService();
@@ -68,12 +69,16 @@ export class AuthService {
     )
   );
 
-  login(request: LoginRequest) {
+  login(request: LoginRequest, skipGlobalErrorHandling = true) {
     this._authState$.next({
       status: StatusType.Loading,
     });
-    return this.httpClient
-      .post<string>(`${this.baseUrl}/token/login`, request)
+    return this.http
+      .post<string>(
+        `${this.baseUrl}/token/login`,
+        request,
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: async () => {

@@ -7,7 +7,7 @@ import { AccountState } from '../models/account-state.model';
 import { AccountResponse } from '../models/account-response.model';
 import { AccountRequest } from '../models/account-request.model';
 import { parseError } from '../../core/helpers/error-helper';
-import { HttpClientService } from '../../services/http-client.service';
+import { HttpClientService } from '../../core/services/http-client.service';
 
 @Injectable({
   providedIn: 'root',
@@ -35,10 +35,10 @@ export class AccountService {
     });
   }
 
-  loadAccounts() {
+  loadAccounts(skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     return this.http
-      .get<AccountResponse[]>(this.baseUrl)
+      .get<AccountResponse[]>(this.baseUrl, {}, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -63,10 +63,14 @@ export class AccountService {
       });
   }
 
-  loadAccountById(id: string) {
+  loadAccountById(id: string, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     return this.http
-      .get<AccountResponse>(`${this.baseUrl}/${id}`)
+      .get<AccountResponse>(
+        `${this.baseUrl}/${id}`,
+        {},
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -90,10 +94,10 @@ export class AccountService {
       });
   }
 
-  createAccount(account: AccountRequest) {
+  createAccount(account: AccountRequest, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     return this.http
-      .post<AccountResponse>(this.baseUrl, account)
+      .post<AccountResponse>(this.baseUrl, account, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -126,10 +130,14 @@ export class AccountService {
       });
   }
 
-  updateAccount(account: AccountRequest) {
+  updateAccount(account: AccountRequest, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     return this.http
-      .put<AccountResponse>(`${this.baseUrl}/${account.id}`, account)
+      .put<AccountResponse>(
+        `${this.baseUrl}/${account.id}`,
+        account,
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -174,10 +182,10 @@ export class AccountService {
       });
   }
 
-  deleteAccount(id: string) {
+  deleteAccount(id: string, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     return this.http
-      .delete(`${this.baseUrl}/${id}`)
+      .delete(`${this.baseUrl}/${id}`, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: () => {

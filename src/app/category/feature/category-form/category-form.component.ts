@@ -100,9 +100,9 @@ export class CategoryFormComponent {
     };
 
     if (request.id) {
-      this.categoryService.updateCategory(request);
+      this.categoryService.updateCategory(request, true);
     } else {
-      this.categoryService.createCategory(request);
+      this.categoryService.createCategory(request, true);
     }
   }
 

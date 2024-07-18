@@ -104,9 +104,9 @@ export class AccountFormComponent {
     };
 
     if (request.id) {
-      this.accountService.updateAccount(request);
+      this.accountService.updateAccount(request, true);
     } else {
-      this.accountService.createAccount(request);
+      this.accountService.createAccount(request, true);
     }
   }
 

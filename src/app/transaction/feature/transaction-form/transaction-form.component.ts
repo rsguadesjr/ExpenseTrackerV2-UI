@@ -109,9 +109,9 @@ export class TransactionFormComponent {
     };
 
     if (request.id) {
-      this.transactionService.updateTransaction(request);
+      this.transactionService.updateTransaction(request, true);
     } else {
-      this.transactionService.createTransaction(request);
+      this.transactionService.createTransaction(request, true);
     }
   }
 

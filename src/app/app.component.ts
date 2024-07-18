@@ -24,7 +24,7 @@ import { TransactionActionType } from './transaction/constants/transaction-actio
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { UiService } from './core/services/ui-service';
-import { HttpErrorReporterService } from './services/http-error-reporter.service';
+import { HttpErrorReporterService } from './core/services/http-error-reporter.service';
 import { parseError } from './core/helpers/error-helper';
 
 @Component({
@@ -131,12 +131,16 @@ export class AppComponent {
       .geterror$()
       .pipe(takeUntilDestroyed())
       .subscribe((error) => {
+        const duration = error.status === 500 ? 10000 : 5000;
+        const title = error.status === 500 ? 'Unexpected Error' : 'Error';
+
+        console.error('Error', error);
         parseError(error).forEach((message) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: message,
-            life: 3000,
+            summary: title,
+            detail: `<span>${message}</span>`,
+            life: duration,
           });
         });
       });

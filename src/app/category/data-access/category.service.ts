@@ -7,12 +7,13 @@ import { CategoryState } from '../models/category-state.model';
 import { CategoryResponse } from '../models/category-response.model';
 import { CategoryRequest } from '../models/category-request.model';
 import { parseError } from '../../core/helpers/error-helper';
+import { HttpClientService } from '../../core/services/http-client.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CategoryService {
-  private http = inject(HttpClient);
+  private http = inject(HttpClientService);
   private baseUrl = environment.API_BASE_URL + 'api/categories';
 
   private _state$ = new BehaviorSubject<CategoryState>({
@@ -32,10 +33,14 @@ export class CategoryService {
     });
   }
 
-  loadCategories() {
+  loadCategories(skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .get<CategoryResponse[]>(this.baseUrl)
+      .get<CategoryResponse[]>(
+        this.baseUrl,
+        {},
+        (skipGlobalErrorHandling = false)
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -57,10 +62,14 @@ export class CategoryService {
       });
   }
 
-  loadCategoryById(id: string) {
+  loadCategoryById(id: string, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .get<CategoryResponse>(`${this.baseUrl}/${id}`)
+      .get<CategoryResponse>(
+        `${this.baseUrl}/${id}`,
+        {},
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -85,10 +94,10 @@ export class CategoryService {
       });
   }
 
-  createCategory(category: CategoryRequest) {
+  createCategory(category: CategoryRequest, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .post<CategoryResponse>(this.baseUrl, category)
+      .post<CategoryResponse>(this.baseUrl, category, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -110,10 +119,14 @@ export class CategoryService {
       });
   }
 
-  updateCategory(category: CategoryRequest) {
+  updateCategory(category: CategoryRequest, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .put<CategoryResponse>(`${this.baseUrl}/${category.id}`, category)
+      .put<CategoryResponse>(
+        `${this.baseUrl}/${category.id}`,
+        category,
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -138,10 +151,13 @@ export class CategoryService {
       });
   }
 
-  deleteCategory(id: string) {
+  deleteCategory(id: string, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .delete<CategoryResponse>(this.baseUrl + '/' + id)
+      .delete<CategoryResponse>(
+        this.baseUrl + '/' + id,
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: () => {

@@ -9,7 +9,7 @@ import { TransactionResponse } from '../models/transaction-response.mode';
 import { TransactionRequest } from '../models/transaction-request.model';
 import { TransactionActionType } from '../constants/transaction-action-type';
 import { parseError } from '../../core/helpers/error-helper';
-import { HttpClientService } from '../../services/http-client.service';
+import { HttpClientService } from '../../core/services/http-client.service';
 
 @Injectable({
   providedIn: 'root',
@@ -34,10 +34,14 @@ export class TransactionService {
     });
   }
 
-  loadTransactions(query: TrasactionQuery) {
+  loadTransactions(query: TrasactionQuery, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .get<TransactionResponse[]>(this.baseUrl, { ...query })
+      .get<TransactionResponse[]>(
+        this.baseUrl,
+        { ...query },
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -60,10 +64,14 @@ export class TransactionService {
       });
   }
 
-  loadTransactionById(id: string) {
+  loadTransactionById(id: string, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .get<TransactionResponse>(`${this.baseUrl}/${id}`)
+      .get<TransactionResponse>(
+        `${this.baseUrl}/${id}`,
+        {},
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -91,10 +99,13 @@ export class TransactionService {
       });
   }
 
-  createTransaction(request: TransactionRequest) {
+  createTransaction(
+    request: TransactionRequest,
+    skipGlobalErrorHandling = false
+  ) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .post<TransactionResponse>(this.baseUrl, request)
+      .post<TransactionResponse>(this.baseUrl, request, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -117,10 +128,17 @@ export class TransactionService {
       });
   }
 
-  updateTransaction(request: TransactionRequest) {
+  updateTransaction(
+    request: TransactionRequest,
+    skipGlobalErrorHandling = false
+  ) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .put<TransactionResponse>(`${this.baseUrl}/${request.id}`, request)
+      .put<TransactionResponse>(
+        `${this.baseUrl}/${request.id}`,
+        request,
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -148,9 +166,12 @@ export class TransactionService {
       });
   }
 
-  deleteTransaction(id: string) {
+  deleteTransaction(id: string, skipGlobalErrorHandling = false) {
     this.http
-      .delete<TransactionResponse>(`${this.baseUrl}/${id}`)
+      .delete<TransactionResponse>(
+        `${this.baseUrl}/${id}`,
+        skipGlobalErrorHandling
+      )
       .pipe(take(1))
       .subscribe({
         next: (response) => {
