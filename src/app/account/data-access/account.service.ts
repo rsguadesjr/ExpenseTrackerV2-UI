@@ -183,6 +183,7 @@ export class AccountService {
   }
 
   deleteAccount(id: string, skipGlobalErrorHandling = false) {
+    console.log('deleteAccount');
     this.updateStatus(StatusType.Loading);
     return this.http
       .delete(`${this.baseUrl}/${id}`, skipGlobalErrorHandling)

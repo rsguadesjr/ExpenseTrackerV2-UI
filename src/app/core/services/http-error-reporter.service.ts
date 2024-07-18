@@ -13,6 +13,7 @@ export class HttpErrorReporterService {
   }
 
   reportError(error: HttpErrorResponse) {
+    console.log('HttpErrorReporterService', error);
     this._error$.next(error);
   }
 }

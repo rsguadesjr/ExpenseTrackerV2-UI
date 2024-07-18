@@ -26,6 +26,7 @@ import { ToastModule } from 'primeng/toast';
 import { UiService } from './core/services/ui-service';
 import { HttpErrorReporterService } from './core/services/http-error-reporter.service';
 import { parseError } from './core/helpers/error-helper';
+import { ErrorToastComponent } from './shared/components/error-toast/error-toast.component';
 
 @Component({
   selector: 'app-root',
@@ -37,6 +38,7 @@ import { parseError } from './core/helpers/error-helper';
     SidebarComponent,
     ProgressBarModule,
     ToastModule,
+    ErrorToastComponent,
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
@@ -49,7 +51,6 @@ export class AppComponent {
   private dashboardService = inject(DashboardService);
   private messageService = inject(MessageService);
   private uiService = inject(UiService);
-  private httpErrorReporterService = inject(HttpErrorReporterService);
 
   title = 'ExpenseTracker';
   isAuthenticated$ = this.authService.isAuthenticated$;
@@ -90,16 +91,13 @@ export class AppComponent {
         });
       });
 
+    // Dashboard related logic
     this.transactionService.state$
       .pipe(
         filter((state) => state.status === StatusType.Success),
         takeUntilDestroyed()
       )
       .subscribe((state) => {
-        console.log('transaction state', {
-          action: state.action,
-          selectedTransaction: state.selectedTransaction,
-        });
         switch (state.action) {
           case TransactionActionType.LoadTransactions:
             this.dashboardService.setTransactions(state.transactions);
@@ -125,24 +123,6 @@ export class AppComponent {
             );
             break;
         }
-      });
-
-    this.httpErrorReporterService
-      .geterror$()
-      .pipe(takeUntilDestroyed())
-      .subscribe((error) => {
-        const duration = error.status === 500 ? 10000 : 5000;
-        const title = error.status === 500 ? 'Unexpected Error' : 'Error';
-
-        console.error('Error', error);
-        parseError(error).forEach((message) => {
-          this.messageService.add({
-            severity: 'error',
-            summary: title,
-            detail: `<span>${message}</span>`,
-            life: duration,
-          });
-        });
       });
   }
 }
