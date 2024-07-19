@@ -11,7 +11,7 @@
       <label for="description">Description</label>
       <input pInputText id="description" formControlName="description" />
       <small class="description-errors" class="text-red-500"
-        *ngIf="form.get('amount')?.touched && form.get('description')?.errors?.required">Description is required
+        *ngIf="form.get('description')?.touched && form.get('description')?.errors?.required">Description is required
       </small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
@@ -19,7 +19,7 @@
       <p-dropdown id="categoryId" formControlName="categoryId" [options]="(categories$ | async) ?? []"
         optionLabel="name" optionValue="id"></p-dropdown>
       <small class="category-errors" class="text-red-500"
-        *ngIf="form.get('amount')?.touched && form.get('categoryId')?.errors?.required">Category is
+        *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.required">Category is
         required</small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
@@ -27,7 +27,8 @@
       <p-calendar id="transactionDate" formControlName="transactionDate" dateFormat="dd-M-yy"
         appendTo="body"></p-calendar>
       <small class="transactionDate-errors" class="text-red-500"
-        *ngIf="form.get('amount')?.touched && form.get('transactionDate')?.errors?.required">Date is rquired</small>
+        *ngIf="form.get('transactionDate')?.touched && form.get('transactionDate')?.errors?.required">Date is
+        rquired</small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
       <label htmlFor="form-tags">Tags</label>

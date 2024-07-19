@@ -136,7 +136,6 @@ export class LoginComponent {
       var provider = new GoogleAuthProvider();
       const result = await signInWithPopup(this.firebaseAuth, provider);
       const idToken = await result.user.getIdToken();
-      const IdTokenResult = await result.user.getIdTokenResult();
 
       this.authService.setStatus(StatusType.Loading);
       this.authService.login({
@@ -146,7 +145,6 @@ export class LoginComponent {
         name: result.user.displayName as string,
       });
     } catch (e: any) {
-      console.log(e);
       if (
         e.code !== 'auth/popup-closed-by-user' &&
         e.code !== 'auth/cancelled-popup-request'

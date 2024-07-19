@@ -4,14 +4,16 @@
     <div class="flex flex-column gap-2 p-fluid">
       <label for="name">Account Name</label>
       <input pInputText id="name" formControlName="name" />
-      <small class="name-errors" class="text-red-500" *ngIf="form.get('name')?.errors?.required">Account name is
+      <small class="name-errors" class="text-red-500"
+        *ngIf="form.get('name')?.touched && form.get('name')?.errors?.required">Account name is
         required</small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
       <label for="description">Description</label>
       <input pInputText id="description" formControlName="description" />
       <small class="description-errors" class="text-red-500"
-        *ngIf="form.get('description')?.errors?.required">Description is required</small>
+        *ngIf="form.get('description')?.touched && form.get('description')?.errors?.required">Description is
+        required</small>
     </div>
     <div class="flex justify-content-start">
       <div class="w-6 flex flex-column gap-2 p-fluid">
@@ -20,8 +22,6 @@
           <p-inputSwitch formControlName="isActive" />
           <span>{{ form.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
         </div>
-        <small class="isActive-errors" class="text-red-500" *ngIf="form.get('isActive')?.errors?.required">IsActive is
-          required</small>
       </div>
       <div class="w-6 flex flex-column gap-2 p-fluid">
         <label for="description">IsDefault</label>
@@ -29,8 +29,6 @@
           <p-inputSwitch formControlName="isDefault" />
           <span>{{ form.get('isDefault')?.value ? 'Default' : 'Not Default' }}</span>
         </div>
-        <small class="isDefault-errors" class="text-red-500" *ngIf="form.get('isDefault')?.errors?.required">IsDefault
-          is required</small>
         <small class="isDefault-errors" class="text-red-500"
           *ngIf="form.get('isDefault')?.errors?.mustNotBeDefault">Inactive account must not be default</small>
       </div>

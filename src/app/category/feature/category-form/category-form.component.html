@@ -3,12 +3,12 @@
     <div class="flex flex-column gap-2 p-fluid">
       <label for="name">Name</label>
       <input pInputText id="name" formControlName="name" />
-      <small class="name-errors" class="text-red-500" *ngIf="form.get('name')?.errors?.required"></small>
+      <small class="name-errors" class="text-red-500"
+        *ngIf="form.get('name')?.touched && form.get('name')?.errors?.required">Name is required</small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
       <label for="description">Description</label>
       <input pInputText id="description" formControlName="description" />
-      <small class="description-errors" class="text-red-500" *ngIf="form.get('description')?.errors?.required"></small>
     </div>
     <div class="flex flex-column gap-2 p-fluid">
       <div class="w-6 flex flex-column gap-2 p-fluid">
@@ -17,7 +17,8 @@
           <p-inputSwitch formControlName="isActive" />
           <span>{{ form.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
         </div>
-        <small class="isActive-errors" class="text-red-500" *ngIf="form.get('isActive')?.errors?.required">IsActive is
+        <small class="isActive-errors" class="text-red-500"
+          *ngIf="form.get('isActive')?.touched && form.get('isActive')?.errors?.required">IsActive is
           required</small>
       </div>
     </div>

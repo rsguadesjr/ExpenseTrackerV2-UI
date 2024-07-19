@@ -23,7 +23,6 @@ export class HttpClientService {
   }
 
   delete<T>(url: string, skipErrorHandling = false) {
-    console.log('delete', url);
     return this.request<T>({ method: 'DELETE', url }, skipErrorHandling);
   }
 
@@ -42,7 +41,6 @@ export class HttpClientService {
       .pipe(
         catchError((error) => {
           if (!skipErrorHandling) {
-            console.log('reportError', error);
             this.httpErrorReporter.reportError(error);
           }
           return throwError(() => error);
