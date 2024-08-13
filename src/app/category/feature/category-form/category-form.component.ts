@@ -19,6 +19,9 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AccountService } from '../../../account/data-access/account.service';
 import { InputSwitchModule } from 'primeng/inputswitch';
+import { Message } from 'primeng/api';
+import { StatusType } from '../../../core/constants/status-type';
+import { MessagesModule } from 'primeng/messages';
 
 @Component({
   selector: 'app-category-form',
@@ -33,6 +36,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
     CalendarModule,
     ButtonModule,
     InputSwitchModule,
+    MessagesModule,
   ],
   templateUrl: './category-form.component.html',
   styleUrl: './category-form.component.scss',
@@ -43,9 +47,18 @@ export class CategoryFormComponent {
   private ref = inject(DynamicDialogRef);
 
   state$ = this.categoryService.state$;
-
   categories$ = this.categoryService.state$.pipe(
     map((state) => state.categories)
+  );
+
+  errorMessages$ = this.state$.pipe(
+    map((state) => state.errors || []),
+    map((errors) =>
+      errors.map(
+        (error) => ({ severity: StatusType.Error, detail: error } as Message)
+      )
+    ),
+    takeUntilDestroyed()
   );
 
   form = new FormGroup({

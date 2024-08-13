@@ -19,6 +19,9 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CategoryService } from '../../../category/data-access/category.service';
 import { AccountService } from '../../../account/data-access/account.service';
+import { MessagesModule } from 'primeng/messages';
+import { StatusType } from '../../../core/constants/status-type';
+import { Message } from 'primeng/api';
 
 @Component({
   selector: 'app-transaction-form',
@@ -32,6 +35,7 @@ import { AccountService } from '../../../account/data-access/account.service';
     ChipsModule,
     CalendarModule,
     ButtonModule,
+    MessagesModule,
   ],
   templateUrl: './transaction-form.component.html',
   styleUrl: './transaction-form.component.scss',
@@ -43,9 +47,18 @@ export class TransactionFormComponent {
   private ref = inject(DynamicDialogRef);
 
   transactionState$ = this.transactionService.state$;
-
   categories$ = this.categoryService.state$.pipe(
     map((state) => state.categories)
+  );
+
+  errorMessages$ = this.transactionState$.pipe(
+    map((state) => state.errors || []),
+    map((errors) =>
+      errors.map(
+        (error) => ({ severity: StatusType.Error, detail: error } as Message)
+      )
+    ),
+    takeUntilDestroyed()
   );
 
   form = new FormGroup({

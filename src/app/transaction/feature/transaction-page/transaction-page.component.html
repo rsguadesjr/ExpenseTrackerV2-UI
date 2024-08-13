@@ -20,6 +20,7 @@
         <tr>
           <th>Category</th>
           <th>Amount</th>
+          <th>Description</th>
           <th>Date</th>
           <th>Tags</th>
           <th>Created Date</th>
@@ -38,6 +39,7 @@
             }
           </td>
           <td class="p-2">{{ transaction.amount }}</td>
+          <td class="p-2">{{ transaction.description }}</td>
           <td class="p-2">{{ transaction.transactionDate | date }}</td>
           <td class="p-2">
             <ng-container *ngIf="transaction.tags; let tags">
@@ -58,10 +60,9 @@
           </td>
         </tr>
       </ng-template>
-
       <ng-template pTemplate="emptymessage" let-c>
         <tr>
-          <td colspan="7" class="text-center">No transactions found.</td>
+          <td colspan="8" class="text-center">No transactions found.</td>
         </tr>
       </ng-template>
     </p-table>

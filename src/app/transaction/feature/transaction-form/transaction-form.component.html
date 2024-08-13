@@ -1,5 +1,8 @@
 <ng-container *ngIf="transactionState$ | async; let state">
   <form [formGroup]="form" class="flex flex-column gap-2" (ngSubmit)="onSubmit()">
+
+    <p-messages *ngIf="errorMessages$ | async; let errorMessages" [value]="errorMessages" [enableService]="false" />
+
     <div class="flex flex-column gap-2 p-fluid">
       <label for="amount">Amount</label>
       <p-inputNumber id="amount" formControlName="amount" />
