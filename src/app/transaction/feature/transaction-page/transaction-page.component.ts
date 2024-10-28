@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { TransactionService } from '../../data-access/transaction.service';
 import { TableModule } from 'primeng/table';
@@ -51,15 +51,24 @@ export class TransactionPageComponent implements OnInit {
   private confirmationService = inject(ConfirmationService);
   private accountService = inject(AccountService);
 
-  transactionsState$ = this.transactionService.state$;
-  calendarData$ = this.transactionService.state$.pipe(
-    map((state) =>
-      state.transactions.map((t) => ({
-        date: new Date(t.transactionDate),
-        value: t.amount,
-      }))
-    )
+  transactions = this.transactionService.transactions;
+  status = this.transactionService.status;
+  // transactionsState$ = this.transactionService.state$;
+  calendarData = computed(() =>
+    this.transactions().map((t) => ({
+      date: new Date(t.transactionDate),
+      value: t.amount,
+    }))
   );
+
+  // calendarData$ = this.transactionService.state$.pipe(
+  //   map((state) =>
+  //     state.transactions.map((t) => ({
+  //       date: new Date(t.transactionDate),
+  //       value: t.amount,
+  //     }))
+  //   )
+  // );
 
   dateFilter$ = new BehaviorSubject({
     startDate: new Date(),

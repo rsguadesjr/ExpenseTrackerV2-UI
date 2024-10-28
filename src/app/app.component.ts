@@ -92,37 +92,37 @@ export class AppComponent {
       });
 
     // Dashboard related logic
-    this.transactionService.state$
-      .pipe(
-        filter((state) => state.status === StatusType.Success),
-        takeUntilDestroyed()
-      )
-      .subscribe((state) => {
-        switch (state.action) {
-          case TransactionActionType.LoadTransactions:
-            this.dashboardService.setTransactions(state.transactions);
-            break;
-          case TransactionActionType.LoadTransactionById:
-            this.dashboardService.updateOrInsertTransaction(
-              state.selectedTransaction!
-            );
-            break;
-          case TransactionActionType.CreateTransaction:
-            this.dashboardService.updateOrInsertTransaction(
-              state.selectedTransaction!
-            );
-            break;
-          case TransactionActionType.UpdateTransaction:
-            this.dashboardService.updateOrInsertTransaction(
-              state.selectedTransaction!
-            );
-            break;
-          case TransactionActionType.DeleteTransaction:
-            this.dashboardService.removeTransaction(
-              state.selectedTransaction!.id
-            );
-            break;
-        }
-      });
+    // this.transactionService.state$
+    //   .pipe(
+    //     filter((state) => state.status === StatusType.Success),
+    //     takeUntilDestroyed()
+    //   )
+    //   .subscribe((state) => {
+    //     switch (state.action) {
+    //       case TransactionActionType.LoadTransactions:
+    //         this.dashboardService.setTransactions(state.transactions);
+    //         break;
+    //       case TransactionActionType.LoadTransactionById:
+    //         this.dashboardService.updateOrInsertTransaction(
+    //           state.selectedTransaction!
+    //         );
+    //         break;
+    //       case TransactionActionType.CreateTransaction:
+    //         this.dashboardService.updateOrInsertTransaction(
+    //           state.selectedTransaction!
+    //         );
+    //         break;
+    //       case TransactionActionType.UpdateTransaction:
+    //         this.dashboardService.updateOrInsertTransaction(
+    //           state.selectedTransaction!
+    //         );
+    //         break;
+    //       case TransactionActionType.DeleteTransaction:
+    //         this.dashboardService.removeTransaction(
+    //           state.selectedTransaction!.id
+    //         );
+    //         break;
+    //     }
+    //   });
   }
 }

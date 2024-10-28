@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -16,7 +16,7 @@ import { from, map, of, skip } from 'rxjs';
 import { ChipsModule } from 'primeng/chips';
 import { CalendarModule } from 'primeng/calendar';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { CategoryService } from '../../../category/data-access/category.service';
 import { AccountService } from '../../../account/data-access/account.service';
 import { MessagesModule } from 'primeng/messages';
@@ -46,20 +46,18 @@ export class TransactionFormComponent {
   private accountService = inject(AccountService);
   private ref = inject(DynamicDialogRef);
 
-  transactionState$ = this.transactionService.state$;
+  transactions = this.transactionService.transactions;
+  selectedTransaction = this.transactionService.selectedTranscation;
+  isEditMode = this.transactionService.isEditMode;
+  status = this.transactionService.status;
+
   categories$ = this.categoryService.state$.pipe(
     map((state) => state.categories)
   );
 
-  errorMessages$ = this.transactionState$.pipe(
-    map((state) => state.errors || []),
-    map((errors) =>
-      errors.map(
-        (error) => ({ severity: StatusType.Error, detail: error } as Message)
-      )
-    ),
-    takeUntilDestroyed()
-  );
+  errorMessages = this.transactionService
+    .errors()
+    .map((error) => ({ severity: StatusType.Error, detail: error } as Message));
 
   form = new FormGroup({
     id: new FormControl<string | null>(null),
@@ -74,27 +72,21 @@ export class TransactionFormComponent {
   });
 
   constructor() {
-    this.transactionState$.pipe(takeUntilDestroyed()).subscribe((state) => {
-      if (state.editMode === 'update') {
-        this.form.patchValue({
-          id: state.selectedTransaction?.id,
-          description: state.selectedTransaction?.description,
-          categoryId: state.selectedTransaction?.category?.id,
-          amount: state.selectedTransaction?.amount,
-          transactionDate: state.selectedTransaction?.transactionDate
-            ? new Date(state.selectedTransaction?.transactionDate)
-            : this.getDay(),
-          tags: state.selectedTransaction?.tags,
-        });
-      }
-    });
+    if (this.selectedTransaction() && this.isEditMode()) {
+      this.form.patchValue({
+        id: this.selectedTransaction()?.id,
+        description: this.selectedTransaction()?.description,
+        categoryId: this.selectedTransaction()?.category?.id,
+        amount: this.selectedTransaction()?.amount,
+        transactionDate: this.selectedTransaction()?.transactionDate
+          ? new Date(this.selectedTransaction()?.transactionDate!)
+          : this.getDay(),
+        tags: this.selectedTransaction()?.tags,
+      });
+    }
 
-    this.transactionState$
-      .pipe(
-        skip(1),
-        map((state) => state.status),
-        takeUntilDestroyed()
-      )
+    toObservable(this.status)
+      .pipe(skip(1), takeUntilDestroyed())
       .subscribe((status) => {
         if (status === 'success') {
           this.ref.close();
@@ -104,10 +96,7 @@ export class TransactionFormComponent {
 
   onSubmit() {
     this.form.markAllAsTouched();
-    if (
-      this.form.invalid ||
-      this.transactionService.stateValue.status === 'loading'
-    ) {
+    if (this.form.invalid || this.status() === 'loading') {
       return;
     }
 

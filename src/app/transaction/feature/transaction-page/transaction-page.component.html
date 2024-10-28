@@ -1,71 +1,68 @@
-<ng-container *ngIf="transactionsState$ | async; let state">
-  <div class="w-full mb-2">
-    <app-transaction-filter-panel (dateFilter)="onDateFilter($event)"
-      [showLoading]="state.status === 'loading'"></app-transaction-filter-panel>
-  </div>
-  <p-card styleClass="surface-card surface-border border-1">
+<div class="w-full mb-2">
+  <app-transaction-filter-panel (dateFilter)="onDateFilter($event)"
+    [showLoading]="status() === 'loading'"></app-transaction-filter-panel>
+</div>
+<p-card styleClass="surface-card surface-border border-1">
+  <ng-template pTemplate="header">
+    <div class="flex justify-content-between align-items-center p-4 pb-0">
+      <span class="text-2xl">Transactions</span>
+      <p-button icon="pi pi-plus" [rounded]="true" severity="info" (click)="createTransaction()"
+        pTooltip="Create Transaction" tooltipPosition="left" showDelay="500" hideDelay="300" />
+    </div>
+  </ng-template>
+  <p-table [value]="transactions()" [paginator]="transactions().length > 0" [rows]="10" [showCurrentPageReport]="true"
+    [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-striped border-round"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [rowsPerPageOptions]="[10, 25, 50]"
+    paginatorStyleClass="justify-content-end">
     <ng-template pTemplate="header">
-      <div class="flex justify-content-between align-items-center p-4 pb-0">
-        <span class="text-2xl">Transactions</span>
-        <p-button icon="pi pi-plus" [rounded]="true" severity="info" (click)="createTransaction()"
-          pTooltip="Create Transaction" tooltipPosition="left" showDelay="500" hideDelay="300" />
-      </div>
+      <tr>
+        <th>Category</th>
+        <th>Amount</th>
+        <th>Description</th>
+        <th>Date</th>
+        <th>Tags</th>
+        <th>Created Date</th>
+        <th>Modified Date</th>
+        <th></th>
+      </tr>
     </ng-template>
-    <p-table [value]="state.transactions" [paginator]="state.transactions.length > 0" [rows]="10"
-      [showCurrentPageReport]="true" [tableStyle]="{ 'min-width': '50rem' }"
-      styleClass="p-datatable-striped border-round"
-      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-      [rowsPerPageOptions]="[10, 25, 50]" paginatorStyleClass="justify-content-end">
-      <ng-template pTemplate="header">
-        <tr>
-          <th>Category</th>
-          <th>Amount</th>
-          <th>Description</th>
-          <th>Date</th>
-          <th>Tags</th>
-          <th>Created Date</th>
-          <th>Modified Date</th>
-          <th></th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-transaction>
-        <tr>
-          <td class="p-2 px-4">
-            @if (transaction.category){
-            {{ transaction.category?.value }}
-            }
-            @else {
-            <span class="font-italic text-color-secondary">Uncategorized</span>
-            }
-          </td>
-          <td class="p-2">{{ transaction.amount }}</td>
-          <td class="p-2">{{ transaction.description }}</td>
-          <td class="p-2">{{ transaction.transactionDate | date }}</td>
-          <td class="p-2">
-            <ng-container *ngIf="transaction.tags; let tags">
-              <p-chip *ngFor="let tag of tags" [label]="tag" styleClass="mr-1" />
-            </ng-container>
-          </td>
-          <td class="p-2">{{ transaction.createdDate | date:'short' }}</td>
-          <td class="p-2">{{ transaction.modifiedDate | date:'short' }}</td>
-          <td class="p-2">
-            <div class="flex gap-1 justify-content-end">
-              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" pTooltip="Edit Transaction"
-                tooltipPosition="left" (click)="editTransaction(transaction)" size="small" showDelay="500"
-                hideDelay="300" />
-              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger"
-                pTooltip="Delete Transaction" tooltipPosition="left" (click)="deleteTransaction(transaction)"
-                size="small" showDelay="500" hideDelay="300" />
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage" let-c>
-        <tr>
-          <td colspan="8" class="text-center">No transactions found.</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </p-card>
-  <p-confirmDialog />
-</ng-container>
+    <ng-template pTemplate="body" let-transaction>
+      <tr>
+        <td class="p-2 px-4">
+          @if (transaction.category){
+          {{ transaction.category?.value }}
+          }
+          @else {
+          <span class="font-italic text-color-secondary">Uncategorized</span>
+          }
+        </td>
+        <td class="p-2">{{ transaction.amount }}</td>
+        <td class="p-2">{{ transaction.description }}</td>
+        <td class="p-2">{{ transaction.transactionDate | date }}</td>
+        <td class="p-2">
+          <ng-container *ngIf="transaction.tags; let tags">
+            <p-chip *ngFor="let tag of tags" [label]="tag" styleClass="mr-1" />
+          </ng-container>
+        </td>
+        <td class="p-2">{{ transaction.createdDate | date:'short' }}</td>
+        <td class="p-2">{{ transaction.modifiedDate | date:'short' }}</td>
+        <td class="p-2">
+          <div class="flex gap-1 justify-content-end">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" pTooltip="Edit Transaction"
+              tooltipPosition="left" (click)="editTransaction(transaction)" size="small" showDelay="500"
+              hideDelay="300" />
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="Delete Transaction"
+              tooltipPosition="left" (click)="deleteTransaction(transaction)" size="small" showDelay="500"
+              hideDelay="300" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage" let-c>
+      <tr>
+        <td colspan="8" class="text-center">No transactions found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+<p-confirmDialog />

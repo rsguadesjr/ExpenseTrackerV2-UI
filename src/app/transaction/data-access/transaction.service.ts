@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { TrasactionQuery } from '../models/transaction-query.model';
 import { BehaviorSubject, take } from 'rxjs';
@@ -18,17 +18,20 @@ export class TransactionService {
   private http = inject(HttpClientService);
   private baseUrl = environment.API_BASE_URL + 'api/transactions';
 
-  private _state$ = new BehaviorSubject<TransactionState>({
+  private _state = signal<TransactionState>({
     status: StatusType.Idle,
     transactions: [],
   });
-  state$ = this._state$.asObservable();
-  get stateValue() {
-    return this._state$.value;
-  }
+
+  // Selector
+  transactions = computed(() => this._state().transactions);
+  status = computed(() => this._state().status);
+  selectedTranscation = computed(() => this._state().selectedTransaction);
+  errors = computed(() => this._state().errors ?? []);
+  isEditMode = computed(() => this._state().editMode === 'update');
 
   resetState() {
-    this._state$.next({
+    this._state.set({
       status: StatusType.Idle,
       transactions: [],
     });
@@ -45,20 +48,16 @@ export class TransactionService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this._state$.next({
-            ...this._state$.value,
+          this._state.update((state) => ({
+            ...state,
             status: StatusType.Success,
             action: TransactionActionType.LoadTransactions,
             transactions: response,
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -75,25 +74,22 @@ export class TransactionService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          const state = this._state$.value;
-          const index = state.transactions.findIndex(
-            (x) => x.id === response.id
-          );
-          state.transactions[index] = response;
-          this._state$.next({
-            ...state,
-            status: StatusType.Success,
-            action: TransactionActionType.LoadTransactionById,
-            selectedTransaction: response,
-            errors: [],
+          this._state.update((state) => {
+            const index = state.transactions.findIndex(
+              (x) => x.id === response.id
+            );
+            state.transactions[index] = response;
+            return {
+              ...state,
+              status: StatusType.Success,
+              action: TransactionActionType.LoadTransactionById,
+              selectedTransaction: response,
+              errors: [],
+            };
           });
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -109,20 +105,17 @@ export class TransactionService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this._state$.next({
-            transactions: [response, ...this._state$.value.transactions],
+          this._state.update((state) => ({
+            ...state,
+            transactions: [response, ...state.transactions],
             status: StatusType.Success,
             action: TransactionActionType.CreateTransaction,
             selectedTransaction: response,
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -142,25 +135,22 @@ export class TransactionService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          const state = this._state$.value;
-          const index = state.transactions.findIndex(
-            (x) => x.id === response.id
-          );
-          state.transactions[index] = response;
-          this._state$.next({
-            ...state,
-            status: StatusType.Success,
-            action: TransactionActionType.UpdateTransaction,
-            selectedTransaction: response,
-            errors: [],
+          this._state.update((state) => {
+            const index = state.transactions.findIndex(
+              (x) => x.id === response.id
+            );
+            state.transactions[index] = response;
+            return {
+              ...state,
+              status: StatusType.Success,
+              action: TransactionActionType.UpdateTransaction,
+              selectedTransaction: response,
+              errors: [],
+            };
           });
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -174,24 +164,17 @@ export class TransactionService {
       )
       .pipe(take(1))
       .subscribe({
-        next: (response) => {
-          const state = this._state$.value;
-          const transactions = state.transactions.filter((x) => x.id !== id);
-          this._state$.next({
+        next: () => {
+          this._state.update((state) => ({
             ...state,
-            transactions,
             status: StatusType.Success,
             action: TransactionActionType.DeleteTransaction,
-            selectedTransaction: { id } as TransactionResponse,
+            transactions: state.transactions.filter((x) => x.id !== id),
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -201,19 +184,19 @@ export class TransactionService {
     editMode: 'create' | 'update',
     transaction?: TransactionResponse
   ) {
-    this._state$.next({
-      ...this._state$.value,
+    this._state.update((state) => ({
+      ...state,
       editMode,
       selectedTransaction: transaction,
       status: StatusType.Idle,
-    });
+    }));
   }
 
   private updateStatus(status: StatusType, errors: string[] = []) {
-    this._state$.next({
-      ...this._state$.value,
+    this._state.update((state) => ({
+      ...state,
       status,
       errors,
-    });
+    }));
   }
 }
