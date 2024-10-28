@@ -53,209 +53,209 @@ export class DashboardComponent {
   categoryService = inject(CategoryService);
   router = inject(Router);
 
-  currentAccount$ = this.accountService.state$.pipe(
-    map((state) => state.currentAccount)
-  );
+  // currentAccount$ = this.accountService.state$.pipe(
+  //   map((state) => state.currentAccount)
+  // );
 
-  state$ = this.dashboardService.state$.pipe(
-    map((state) => {
-      const totalAmount = state.transactions.reduce(
-        (acc, curr) => acc + curr.amount,
-        0
-      );
+  // state$ = this.dashboardService.state$.pipe(
+  //   map((state) => {
+  //     const totalAmount = state.transactions.reduce(
+  //       (acc, curr) => acc + curr.amount,
+  //       0
+  //     );
 
-      const recentTransactions = state.transactions.slice(0, 5);
-      return {
-        ...state,
-        totalAmount,
-        recentTransactions,
-      };
-    })
-  );
+  //     const recentTransactions = state.transactions.slice(0, 5);
+  //     return {
+  //       ...state,
+  //       totalAmount,
+  //       recentTransactions,
+  //     };
+  //   })
+  // );
 
-  // get the total amount of each category
-  // to be used for Categorized Chart
-  categorizedData$ = combineLatest([
-    this.dashboardService.state$.pipe(map((state) => state.transactions)),
-    this.categoryService.state$.pipe(map((state) => state.categories)),
-  ]).pipe(
-    map(([_transactions, _categories]) => {
-      const categories = _categories.map((x) => ({ id: x.id, name: x.name }));
+  // // get the total amount of each category
+  // // to be used for Categorized Chart
+  // categorizedData$ = combineLatest([
+  //   this.dashboardService.state$.pipe(map((state) => state.transactions)),
+  //   this.categoryService.state$.pipe(map((state) => state.categories)),
+  // ]).pipe(
+  //   map(([_transactions, _categories]) => {
+  //     const categories = _categories.map((x) => ({ id: x.id, name: x.name }));
 
-      // Add "Uncategorized" category if there are no transactions with null category
-      if (_transactions.find((x) => x.category === null)) {
-        categories.push({ id: null!, name: 'Uncategorized' });
-      }
+  //     // Add "Uncategorized" category if there are no transactions with null category
+  //     if (_transactions.find((x) => x.category === null)) {
+  //       categories.push({ id: null!, name: 'Uncategorized' });
+  //     }
 
-      const overallAmount = _transactions.reduce(
-        (acc, curr) => acc + curr.amount,
-        0
-      );
-      return categories
-        .map((category) => {
-          const totalAmount = _transactions
-            .filter((transaction) => transaction.category?.id == category.id)
-            .reduce((acc, curr) => acc + curr.amount, 0);
-          return {
-            name: category.name,
-            totalAmount,
-            percentage: (totalAmount / overallAmount) * 100,
-          };
-        })
-        .sort((a, b) => b.totalAmount - a.totalAmount);
-    })
-  );
+  //     const overallAmount = _transactions.reduce(
+  //       (acc, curr) => acc + curr.amount,
+  //       0
+  //     );
+  //     return categories
+  //       .map((category) => {
+  //         const totalAmount = _transactions
+  //           .filter((transaction) => transaction.category?.id == category.id)
+  //           .reduce((acc, curr) => acc + curr.amount, 0);
+  //         return {
+  //           name: category.name,
+  //           totalAmount,
+  //           percentage: (totalAmount / overallAmount) * 100,
+  //         };
+  //       })
+  //       .sort((a, b) => b.totalAmount - a.totalAmount);
+  //   })
+  // );
 
-  showDetails = false;
-  // get the top 5 transactions based on amount
-  topTransactions$ = this.dashboardService.state$.pipe(
-    map((state) => {
-      const transactions = state.transactions.slice();
-      return transactions.sort((a, b) => b.amount - a.amount).slice(0, 5);
-    })
-  );
+  // showDetails = false;
+  // // get the top 5 transactions based on amount
+  // topTransactions$ = this.dashboardService.state$.pipe(
+  //   map((state) => {
+  //     const transactions = state.transactions.slice();
+  //     return transactions.sort((a, b) => b.amount - a.amount).slice(0, 5);
+  //   })
+  // );
 
-  transctionsByDate$ = this.dashboardService.state$.pipe(
-    map((state) => {
-      const daysInMonth = getDaysInMonth(new Date());
-      const dates = Array.from(
-        { length: daysInMonth },
-        (_, index) =>
-          new Date(new Date().getFullYear(), new Date().getMonth(), index + 1)
-      );
-      const data = dates.map((date) => {
-        const transactions = state.transactions.filter((transaction) => {
-          const transactionDate = new Date(transaction.transactionDate);
-          return isSameDay(date, transactionDate);
-        });
-        const totalAmount = transactions.reduce(
-          (acc, curr) => acc + curr.amount,
-          0
-        );
+  // transctionsByDate$ = this.dashboardService.state$.pipe(
+  //   map((state) => {
+  //     const daysInMonth = getDaysInMonth(new Date());
+  //     const dates = Array.from(
+  //       { length: daysInMonth },
+  //       (_, index) =>
+  //         new Date(new Date().getFullYear(), new Date().getMonth(), index + 1)
+  //     );
+  //     const data = dates.map((date) => {
+  //       const transactions = state.transactions.filter((transaction) => {
+  //         const transactionDate = new Date(transaction.transactionDate);
+  //         return isSameDay(date, transactionDate);
+  //       });
+  //       const totalAmount = transactions.reduce(
+  //         (acc, curr) => acc + curr.amount,
+  //         0
+  //       );
 
-        return {
-          date,
-          transactions,
-          totalAmount,
-        };
-      });
+  //       return {
+  //         date,
+  //         transactions,
+  //         totalAmount,
+  //       };
+  //     });
 
-      return data;
-    })
-  );
+  //     return data;
+  //   })
+  // );
 
-  highestDailyTransaction$ = this.transctionsByDate$.pipe(
-    map((data) => {
-      if (data.length === 0) {
-        return null;
-      }
+  // highestDailyTransaction$ = this.transctionsByDate$.pipe(
+  //   map((data) => {
+  //     if (data.length === 0) {
+  //       return null;
+  //     }
 
-      return data.slice().sort((a, b) => b.totalAmount - a.totalAmount)[0];
-    })
-  );
+  //     return data.slice().sort((a, b) => b.totalAmount - a.totalAmount)[0];
+  //   })
+  // );
 
-  highestCategoryTransaction$ = this.categorizedData$.pipe(
-    map((data) => {
-      if (data.length === 0) {
-        return {
-          name: '',
-          totalAmount: 0,
-          percentage: 0,
-        };
-      }
+  // highestCategoryTransaction$ = this.categorizedData$.pipe(
+  //   map((data) => {
+  //     if (data.length === 0) {
+  //       return {
+  //         name: '',
+  //         totalAmount: 0,
+  //         percentage: 0,
+  //       };
+  //     }
 
-      return data.slice().sort((a, b) => b.totalAmount - a.totalAmount)[0];
-    })
-  );
+  //     return data.slice().sort((a, b) => b.totalAmount - a.totalAmount)[0];
+  //   })
+  // );
 
-  chartData$ = this.state$.pipe(
-    map((state) => {
-      const documentStyle = getComputedStyle(document.documentElement);
-      const daysInMonth = getDaysInMonth(new Date());
-      const dates = Array.from(
-        { length: daysInMonth },
-        (_, index) =>
-          new Date(new Date().getFullYear(), new Date().getMonth(), index + 1)
-      );
+  // chartData$ = this.state$.pipe(
+  //   map((state) => {
+  //     const documentStyle = getComputedStyle(document.documentElement);
+  //     const daysInMonth = getDaysInMonth(new Date());
+  //     const dates = Array.from(
+  //       { length: daysInMonth },
+  //       (_, index) =>
+  //         new Date(new Date().getFullYear(), new Date().getMonth(), index + 1)
+  //     );
 
-      const data = dates.map((date) => {
-        const transactions = state.transactions.filter((transaction) => {
-          const transactionDate = new Date(transaction.transactionDate);
-          return isSameDay(date, transactionDate);
-        });
-        const totalAmount = transactions.reduce(
-          (acc, curr) => acc + curr.amount,
-          0
-        );
+  //     const data = dates.map((date) => {
+  //       const transactions = state.transactions.filter((transaction) => {
+  //         const transactionDate = new Date(transaction.transactionDate);
+  //         return isSameDay(date, transactionDate);
+  //       });
+  //       const totalAmount = transactions.reduce(
+  //         (acc, curr) => acc + curr.amount,
+  //         0
+  //       );
 
-        return { date, transactions, totalAmount };
-      });
+  //       return { date, transactions, totalAmount };
+  //     });
 
-      return {
-        labels: dates.map((date) => date.getDate()),
-        datasets: [
-          {
-            label: 'Amount',
-            data: data.map((d) => d.totalAmount),
-            fill: true,
-            borderColor: documentStyle.getPropertyValue('--orange-500'),
-            tension: 0.5,
-            backgroundColor: documentStyle.getPropertyValue('--orange-800'),
-          },
-        ],
-      };
-    })
-  );
+  //     return {
+  //       labels: dates.map((date) => date.getDate()),
+  //       datasets: [
+  //         {
+  //           label: 'Amount',
+  //           data: data.map((d) => d.totalAmount),
+  //           fill: true,
+  //           borderColor: documentStyle.getPropertyValue('--orange-500'),
+  //           tension: 0.5,
+  //           backgroundColor: documentStyle.getPropertyValue('--orange-800'),
+  //         },
+  //       ],
+  //     };
+  //   })
+  // );
 
-  chartOptions$ = of(null).pipe(
-    map(() => {
-      const documentStyle = getComputedStyle(document.documentElement);
-      const textColor = documentStyle.getPropertyValue('--text-color');
-      const textColorSecondary = documentStyle.getPropertyValue(
-        '--text-color-secondary'
-      );
-      const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        aspectRatio: 0.8,
-        plugins: {
-          legend: {
-            labels: {
-              color: textColor,
-            },
-            display: false,
-          },
-        },
-        scales: {
-          x: {
-            ticks: {
-              color: textColorSecondary,
-            },
-            grid: {
-              color: surfaceBorder,
-            },
-          },
-          y: {
-            ticks: {
-              color: textColorSecondary,
-            },
-            grid: {
-              color: surfaceBorder,
-            },
-          },
-        },
-      };
-    })
-  );
+  // chartOptions$ = of(null).pipe(
+  //   map(() => {
+  //     const documentStyle = getComputedStyle(document.documentElement);
+  //     const textColor = documentStyle.getPropertyValue('--text-color');
+  //     const textColorSecondary = documentStyle.getPropertyValue(
+  //       '--text-color-secondary'
+  //     );
+  //     const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
+  //     return {
+  //       responsive: true,
+  //       maintainAspectRatio: false,
+  //       aspectRatio: 0.8,
+  //       plugins: {
+  //         legend: {
+  //           labels: {
+  //             color: textColor,
+  //           },
+  //           display: false,
+  //         },
+  //       },
+  //       scales: {
+  //         x: {
+  //           ticks: {
+  //             color: textColorSecondary,
+  //           },
+  //           grid: {
+  //             color: surfaceBorder,
+  //           },
+  //         },
+  //         y: {
+  //           ticks: {
+  //             color: textColorSecondary,
+  //           },
+  //           grid: {
+  //             color: surfaceBorder,
+  //           },
+  //         },
+  //       },
+  //     };
+  //   })
+  // );
 
-  tableMenuItems: MenuItem[] = [
-    {
-      label: 'View All',
-      command: () => {
-        console.log('Test');
-        this.router.navigateByUrl('/transactions');
-      },
-    },
-  ];
+  // tableMenuItems: MenuItem[] = [
+  //   {
+  //     label: 'View All',
+  //     command: () => {
+  //       console.log('Test');
+  //       this.router.navigateByUrl('/transactions');
+  //     },
+  //   },
+  // ];
 }

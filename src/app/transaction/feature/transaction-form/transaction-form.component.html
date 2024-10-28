@@ -18,7 +18,7 @@
   </div>
   <div class="flex flex-column gap-2 p-fluid">
     <label for="categoryId">Category</label>
-    <p-dropdown id="categoryId" formControlName="categoryId" [options]="(categories$ | async) ?? []" optionLabel="name"
+    <p-dropdown id="categoryId" formControlName="categoryId" [options]="categories()" optionLabel="name"
       optionValue="id"></p-dropdown>
     <small class="category-errors" class="text-red-500"
       *ngIf="form.get('categoryId')?.touched && form.get('categoryId')?.errors?.required">Category is

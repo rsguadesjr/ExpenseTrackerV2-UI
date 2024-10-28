@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -46,19 +46,16 @@ export class CategoryFormComponent {
   private accountService = inject(AccountService);
   private ref = inject(DynamicDialogRef);
 
-  state$ = this.categoryService.state$;
-  categories$ = this.categoryService.state$.pipe(
-    map((state) => state.categories)
-  );
-
-  errorMessages$ = this.state$.pipe(
-    map((state) => state.errors || []),
-    map((errors) =>
-      errors.map(
+  categories = this.categoryService.categories;
+  status = this.categoryService.status;
+  selectedCategory = this.categoryService.selectedCategory;
+  isEditMode = this.categoryService.isEditMode;
+  errorMessages = computed(() =>
+    this.categoryService
+      .errors()
+      .map(
         (error) => ({ severity: StatusType.Error, detail: error } as Message)
       )
-    ),
-    takeUntilDestroyed()
   );
 
   form = new FormGroup({
@@ -70,37 +67,26 @@ export class CategoryFormComponent {
   });
 
   constructor() {
-    this.state$.pipe(takeUntilDestroyed()).subscribe((state) => {
-      if (state.editMode === 'update') {
-        this.form.patchValue({
-          id: state.selectedCategory?.id,
-          name: state.selectedCategory?.name,
-          description: state.selectedCategory?.description,
-          isActive: state.selectedCategory?.isActive,
-          order: state.selectedCategory?.order,
-        });
+    if (this.selectedCategory() && this.isEditMode()) {
+      this.form.patchValue({
+        id: this.selectedCategory()?.id,
+        name: this.selectedCategory()?.name,
+        description: this.selectedCategory()?.description,
+        isActive: this.selectedCategory()?.isActive,
+        order: this.selectedCategory()?.order,
+      });
+    }
+
+    effect(() => {
+      if (this.status() === StatusType.Success) {
+        this.ref.close();
       }
     });
-
-    this.state$
-      .pipe(
-        skip(1),
-        map((state) => state.status),
-        takeUntilDestroyed()
-      )
-      .subscribe((status) => {
-        if (status === 'success') {
-          this.ref.close();
-        }
-      });
   }
 
   onSubmit() {
     this.form.markAllAsTouched();
-    if (
-      this.form.invalid ||
-      this.categoryService.stateValue.status === 'loading'
-    ) {
+    if (this.form.invalid || this.status() === StatusType.Loading) {
       return;
     }
 

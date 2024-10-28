@@ -1,73 +1,71 @@
-<ng-container *ngIf="state$ | async as state">
-  <p-card styleClass="surface-card surface-border border-1">
-    <ng-template pTemplate="header">
-      <div class="flex justify-content-between align-items-center p-4 pb-0">
-        <span class="text-2xl">Manage Categories</span>
-        <p-button icon="pi pi-plus" [rounded]="true" severity="info" (click)="createCategory()"
-          pTooltip="Create Category" tooltipPosition="left" showDelay="500" hideDelay="300" />
-      </div>
-    </ng-template>
-    <div class="flex p-2 gap-2 align-items-center">
-      <p-inputSwitch [(ngModel)]=" enableSorting" /> {{ enableSorting ? 'Enabled' : 'Disabled' }} Sorting
-      <!-- <button *ngIf="hasOrderChanged && enableSorting" pButton pRipple label="Save Order" type="button"
-        class="p-button-success" [disabled]="state.status === 'loading'"
-        [icon]="state.status === 'loading' ? 'pi pi-spin pi-spinner' : ''" (click)="reorderCategories()">
-      </button> -->
-      <p-button *ngIf="hasOrderChanged && enableSorting"
-        [icon]="state.status === 'loading' ? 'pi pi-spin pi-spinner' : 'pi pi-save'" [rounded]="true" severity="success"
-        (click)="reorderCategories()" pTooltip="Save Updated Order" tooltipPosition="left" showDelay="500"
-        hideDelay="300" />
+<p-card styleClass="surface-card surface-border border-1">
+  <ng-template pTemplate="header">
+    <div class="flex justify-content-between align-items-center p-4 pb-0">
+      <span class="text-2xl">Manage Categories</span>
+      <p-button icon="pi pi-plus" [rounded]="true" severity="info" (click)="createCategory()" pTooltip="Create Category"
+        tooltipPosition="left" showDelay="500" hideDelay="300" />
     </div>
-    <p-table [value]="state.categories" [tableStyle]="{'min-width': '50rem'}" [reorderableColumns]="true"
-      (onRowReorder)="onRowReorder($event)">
-      <ng-template pTemplate="header" let-columns>
-        <tr>
-          <th style="width:3rem" *ngIf="enableSorting"></th>
-          <!-- <th>Order</th> -->
-          <th>Name </th>
-          <th>Description</th>
-          <th>Active</th>
-          <th>Created Date</th>
-          <th>Modified Date</th>
-          <th>Actions</th>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-category let-columns="columns" let-index="rowIndex">
-        <tr [pReorderableRow]="index">
-          <td *ngIf="enableSorting">
-            <span class="pi pi-bars" pReorderableRowHandle></span>
-          </td>
-          <!-- <td>{{ category.order }}</td> -->
-          <td>{{ category.name }}</td>
-          <td>{{ category.description }}</td>
-          <td>
+  </ng-template>
+  <div class="flex p-2 gap-2 align-items-center">
+    <p-inputSwitch [ngModel]="enableSorting()" (ngModelChange)="enableSortingChange($event)" /> {{ enableSorting() ?
+    'Enabled' : 'Disabled' }} Sorting
+    <!-- <button *ngIf="canSaveSortingChange && enableSorting()" pButton pRipple label="Save Order" type="button"
+      class="p-button-success" [disabled]="status() === 'loading'"
+      [icon]="status() === 'loading' ? 'pi pi-spin pi-spinner' : ''" (click)="reorderCategories()">
+    </button> -->
+    <p-button *ngIf="canSaveSortingChange() && enableSorting()"
+      [icon]="status() === 'loading' ? 'pi pi-spin pi-spinner' : 'pi pi-save'" [rounded]="true" severity="success"
+      (click)="reorderCategories()" pTooltip="Save Updated Order" tooltipPosition="left" showDelay="500"
+      hideDelay="300" />
+  </div>
+  <p-table [value]="categories()" [tableStyle]="{'min-width': '50rem'}" [reorderableColumns]="true"
+    (onRowReorder)="onRowReorder($event)">
+    <ng-template pTemplate="header" let-columns>
+      <tr>
+        <th style="width:3rem" *ngIf="enableSorting()"></th>
+        <!-- <th>Order</th> -->
+        <th>Name </th>
+        <th>Description</th>
+        <th>Active</th>
+        <th>Created Date</th>
+        <th>Modified Date</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-category let-columns="columns" let-index="rowIndex">
+      <tr [pReorderableRow]="index">
+        <td *ngIf="enableSorting()">
+          <span class="pi pi-bars" pReorderableRowHandle></span>
+        </td>
+        <!-- <td>{{ category.order }}</td> -->
+        <td>{{ category.name }}</td>
+        <td>{{ category.description }}</td>
+        <td>
 
-            @if (category.isActive){
-            <i class="pi pi-check text-green-500 font-bold"></i>
-            }
-            @else {
-            <i class="pi pi-times text-color-secondary font-bold"></i>
-            }
-          </td>
-          <td>{{ category.createdDate | date: 'medium' }}</td>
-          <td>{{ category.modifiedDate | date: 'medium' }} </td>
-          <td>
-            <div class="flex gap-1 justify-content-center">
-              <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" pTooltip="Edit Category"
-                tooltipPosition="left" (click)="editCategory(category)" size="small" showDelay="500" hideDelay="300" />
-              <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="Delete Category"
-                tooltipPosition="left" (click)="deleteCategory(category)" size="small" showDelay="500"
-                hideDelay="300" />
-            </div>
-          </td>
-        </tr>
-      </ng-template>
-      <ng-template pTemplate="emptymessage" let-c>
-        <tr>
-          <td colspan="7" class="text-center">No categories found.</td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </p-card>
-  <p-confirmDialog />
-</ng-container>
+          @if (category.isActive){
+          <i class="pi pi-check text-green-500 font-bold"></i>
+          }
+          @else {
+          <i class="pi pi-times text-color-secondary font-bold"></i>
+          }
+        </td>
+        <td>{{ category.createdDate | date: 'medium' }}</td>
+        <td>{{ category.modifiedDate | date: 'medium' }} </td>
+        <td>
+          <div class="flex gap-1 justify-content-center">
+            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="info" pTooltip="Edit Category"
+              tooltipPosition="left" (click)="editCategory(category)" size="small" showDelay="500" hideDelay="300" />
+            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" pTooltip="Delete Category"
+              tooltipPosition="left" (click)="deleteCategory(category)" size="small" showDelay="500" hideDelay="300" />
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage" let-c>
+      <tr>
+        <td colspan="7" class="text-center">No categories found.</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+<p-confirmDialog />

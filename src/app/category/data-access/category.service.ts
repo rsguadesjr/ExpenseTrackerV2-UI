@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { BehaviorSubject, take } from 'rxjs';
 import { StatusType } from '../../core/constants/status-type';
@@ -16,18 +16,29 @@ export class CategoryService {
   private http = inject(HttpClientService);
   private baseUrl = environment.API_BASE_URL + 'api/categories';
 
-  private _state$ = new BehaviorSubject<CategoryState>({
+  // private _state$ = new BehaviorSubject<CategoryState>({
+  //   status: StatusType.Idle,
+  //   categories: [],
+  // });
+
+  // state$ = this._state$.asObservable();
+  // get stateValue() {
+  //   return this._state$.value;
+  // }
+
+  private _state = signal<CategoryState>({
     status: StatusType.Idle,
     categories: [],
   });
 
-  state$ = this._state$.asObservable();
-  get stateValue() {
-    return this._state$.value;
-  }
+  categories = computed(() => this._state().categories);
+  selectedCategory = computed(() => this._state().selectedCategory);
+  status = computed(() => this._state().status);
+  errors = computed(() => this._state().errors ?? []);
+  isEditMode = computed(() => this._state().editMode === 'update');
 
   resetState() {
-    this._state$.next({
+    this._state.set({
       status: StatusType.Idle,
       categories: [],
     });
@@ -44,19 +55,15 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this._state$.next({
-            ...this._state$.value,
+          this._state.update((state) => ({
+            ...state,
             status: StatusType.Success,
             categories: response,
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -73,22 +80,21 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          const state = this._state$.value;
-          const index = state.categories.findIndex((x) => x.id === response.id);
-          state.categories[index] = response;
-          this._state$.next({
-            ...state,
-            status: StatusType.Success,
-            selectedCategory: response,
-            errors: [],
+          this._state.update((state) => {
+            const index = state.categories.findIndex(
+              (x) => x.id === response.id
+            );
+            state.categories[index] = response;
+            return {
+              ...state,
+              status: StatusType.Success,
+              selectedCategory: response,
+              errors: [],
+            };
           });
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -101,19 +107,15 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this._state$.next({
-            ...this._state$.value,
+          this._state.update((state) => ({
+            ...state,
             status: StatusType.Success,
-            categories: [...this._state$.value.categories, response],
+            categories: [...state.categories, response],
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -130,22 +132,21 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          const state = this._state$.value;
-          const index = state.categories.findIndex((x) => x.id === response.id);
-          state.categories[index] = response;
-          this._state$.next({
-            ...state,
-            status: StatusType.Success,
-            selectedCategory: response,
-            errors: [],
+          this._state.update((state) => {
+            const index = state.categories.findIndex(
+              (x) => x.id === response.id
+            );
+            state.categories[index] = response;
+            return {
+              ...state,
+              status: StatusType.Success,
+              selectedCategory: response,
+              errors: [],
+            };
           });
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -161,21 +162,15 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          const state = this._state$.value;
-          const categories = state.categories.filter((x) => x.id !== id);
-          this._state$.next({
+          this._state.update((state) => ({
             ...state,
-            categories,
             status: StatusType.Success,
+            categories: state.categories.filter((x) => x.id !== id),
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -188,31 +183,26 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          const state = this._state$.value;
-          // update the order of the sorted categories
-          const categories = state.categories.map((x) => {
-            const sortedCategory = sortedCategories.find((y) => y.id === x.id);
-            if (sortedCategory) {
-              return {
-                ...x,
-                order: sortedCategory.order,
-              };
-            }
-            return x;
-          });
-          this._state$.next({
-            ...this._state$.value,
-            categories,
+          this._state.update((state) => ({
+            ...state,
             status: StatusType.Success,
+            categories: state.categories.map((x) => {
+              const sortedCategory = sortedCategories.find(
+                (y) => y.id === x.id
+              );
+              if (sortedCategory) {
+                return {
+                  ...x,
+                  order: sortedCategory.order,
+                };
+              }
+              return x;
+            }),
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -222,18 +212,19 @@ export class CategoryService {
     editMode: 'create' | 'update',
     category: CategoryResponse | null
   ) {
-    this._state$.next({
-      ...this._state$.value,
+    this._state.update((state) => ({
+      ...state,
       editMode,
       selectedCategory: category,
-    });
+      status: StatusType.Idle,
+    }));
   }
 
   private updateStatus(status: StatusType, errors: string[] = []) {
-    this._state$.next({
-      ...this._state$.value,
+    this._state.update((state) => ({
+      ...state,
       status,
       errors,
-    });
+    }));
   }
 }

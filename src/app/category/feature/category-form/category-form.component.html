@@ -1,36 +1,34 @@
-<ng-container *ngIf="state$ | async; let state">
-  <form [formGroup]="form" class="flex flex-column gap-2" (ngSubmit)="onSubmit()">
+<form [formGroup]="form" class="flex flex-column gap-2" (ngSubmit)="onSubmit()">
 
-    <p-messages *ngIf="errorMessages$ | async; let errorMessages" [value]="errorMessages" [enableService]="false" />
+  <p-messages *ngIf="errorMessages() as  errorMessages" [value]="errorMessages" [enableService]="false" />
 
-    <div class="flex flex-column gap-2 p-fluid">
-      <label for="name">Name</label>
-      <input pInputText id="name" formControlName="name" />
-      <small class="name-errors" class="text-red-500"
-        *ngIf="form.get('name')?.touched && form.get('name')?.errors?.required">Name is required</small>
-    </div>
-    <div class="flex flex-column gap-2 p-fluid">
-      <label for="description">Description</label>
-      <input pInputText id="description" formControlName="description" />
-    </div>
-    <div class="flex flex-column gap-2 p-fluid">
-      <div class="w-6 flex flex-column gap-2 p-fluid">
-        <label for="description">IsActive</label>
-        <div class="flex justify-content-start gap-2">
-          <p-inputSwitch formControlName="isActive" />
-          <span>{{ form.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
-        </div>
-        <small class="isActive-errors" class="text-red-500"
-          *ngIf="form.get('isActive')?.touched && form.get('isActive')?.errors?.required">IsActive is
-          required</small>
+  <div class="flex flex-column gap-2 p-fluid">
+    <label for="name">Name</label>
+    <input pInputText id="name" formControlName="name" />
+    <small class="name-errors" class="text-red-500"
+      *ngIf="form.get('name')?.touched && form.get('name')?.errors?.required">Name is required</small>
+  </div>
+  <div class="flex flex-column gap-2 p-fluid">
+    <label for="description">Description</label>
+    <input pInputText id="description" formControlName="description" />
+  </div>
+  <div class="flex flex-column gap-2 p-fluid">
+    <div class="w-6 flex flex-column gap-2 p-fluid">
+      <label for="description">IsActive</label>
+      <div class="flex justify-content-start gap-2">
+        <p-inputSwitch formControlName="isActive" />
+        <span>{{ form.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
       </div>
+      <small class="isActive-errors" class="text-red-500"
+        *ngIf="form.get('isActive')?.touched && form.get('isActive')?.errors?.required">IsActive is
+        required</small>
     </div>
+  </div>
 
-    <div class="flex justify-content-end gap-2 mt-4">
-      <button pButton pRipple label="Cancel" (click)="cancel()" [disabled]="state.status === 'loading'"></button>
-      <button pButton pRipple label="Submit" class="p-button-success" [disabled]="state.status === 'loading'"
-        [icon]="state.status === 'loading' ? 'pi pi-spin pi-spinner' : ''">
-      </button>
-    </div>
-  </form>
-</ng-container>
+  <div class="flex justify-content-end gap-2 mt-4">
+    <button pButton pRipple label="Cancel" (click)="cancel()" [disabled]="status() === 'loading'"></button>
+    <button pButton pRipple label="Submit" class="p-button-success" [disabled]="status() === 'loading'"
+      [icon]="status() === 'loading' ? 'pi pi-spin pi-spinner' : ''">
+    </button>
+  </div>
+</form>

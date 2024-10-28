@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { CategoryService } from '../../data-access/category.service';
 import { CommonModule } from '@angular/common';
@@ -9,7 +9,7 @@ import { CategoryResponse } from '../../models/category-response.model';
 import { DialogService } from 'primeng/dynamicdialog';
 import { ConfirmationService } from 'primeng/api';
 import { CategoryFormComponent } from '../category-form/category-form.component';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { Subject, debounce, debounceTime, filter, map, take } from 'rxjs';
 import { StatusType } from '../../../core/constants/status-type';
 import { CardModule } from 'primeng/card';
@@ -41,21 +41,18 @@ export class CategoryManagementComponent {
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
 
-  state$ = this.categoryService.state$;
+  // state$ = this.categoryService.state$;
+  categories = this.categoryService.categories;
+  status = this.categoryService.status;
 
-  hasOrderChanged = false;
-  enableSorting = false;
+  canSaveSortingChange = computed(
+    () => this.sortingChanged() && this.enableSorting()
+  );
+  enableSorting = signal<boolean>(false);
+  sortingChanged = signal<boolean>(false);
   sortCategories$ = new Subject<{ id: string; order: number }[]>();
 
   constructor() {
-    this.categoryService.state$
-      .pipe(takeUntilDestroyed())
-      .subscribe((state) => {
-        if (state.status === StatusType.Success) {
-          this.hasOrderChanged = false;
-        }
-      });
-
     this.sortCategories$.pipe(takeUntilDestroyed()).subscribe((sortedItems) => {
       this.categoryService.sortCategories(sortedItems);
     });
@@ -92,22 +89,23 @@ export class CategoryManagementComponent {
   }
 
   onRowReorder(event: any) {
-    this.hasOrderChanged = true;
+    this.sortingChanged.set(true);
   }
 
   reorderCategories() {
-    if (
-      !this.hasOrderChanged ||
-      this.categoryService.stateValue.status === StatusType.Loading
-    ) {
+    if (!this.canSaveSortingChange || this.status() === StatusType.Loading) {
       return;
     }
 
     this.sortCategories$.next(
-      this.categoryService.stateValue.categories.map((x, i) => ({
+      this.categories().map((x, i) => ({
         id: x.id,
         order: i + 1,
       }))
     );
+  }
+
+  enableSortingChange(enable: boolean) {
+    this.enableSorting.set(enable);
   }
 }

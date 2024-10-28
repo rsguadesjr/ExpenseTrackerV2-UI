@@ -51,9 +51,7 @@ export class TransactionFormComponent {
   isEditMode = this.transactionService.isEditMode;
   status = this.transactionService.status;
 
-  categories$ = this.categoryService.state$.pipe(
-    map((state) => state.categories)
-  );
+  categories = this.categoryService.categories;
 
   errorMessages = this.transactionService
     .errors()
