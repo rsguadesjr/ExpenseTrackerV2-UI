@@ -17,29 +17,20 @@ export class CategoryService {
   private http = inject(HttpClientService);
   private baseUrl = environment.API_BASE_URL + 'api/categories';
 
-  // private _state$ = new BehaviorSubject<CategoryState>({
-  //   status: StatusType.Idle,
-  //   categories: [],
-  // });
-
-  // state$ = this._state$.asObservable();
-  // get stateValue() {
-  //   return this._state$.value;
-  // }
-
-  private _state = signal<CategoryState>({
+  private state = signal<CategoryState>({
     status: StatusType.Idle,
     categories: [],
   });
 
-  categories = computed(() => this._state().categories);
-  selectedCategory = computed(() => this._state().selectedCategory);
-  status = computed(() => this._state().status);
-  errors = computed(() => this._state().errors ?? []);
-  isEditMode = computed(() => this._state().editMode === 'update');
+  categories = computed(() => this.state().categories);
+  selectedCategory = computed(() => this.state().selectedCategory);
+  status = computed(() => this.state().status);
+  errors = computed(() => this.state().errors ?? []);
+  isEditMode = computed(() => this.state().editMode === 'update');
+  action = computed(() => this.state().action);
 
   resetState() {
-    this._state.set({
+    this.state.set({
       status: StatusType.Idle,
       categories: [],
     });
@@ -56,7 +47,7 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this._state.update((state) => ({
+          this.state.update((state) => ({
             ...state,
             status: StatusType.Success,
             categories: response,
@@ -82,7 +73,7 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this._state.update((state) => {
+          this.state.update((state) => {
             const index = state.categories.findIndex(
               (x) => x.id === response.id
             );
@@ -110,7 +101,7 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this._state.update((state) => ({
+          this.state.update((state) => ({
             ...state,
             status: StatusType.Success,
             categories: [...state.categories, response],
@@ -136,7 +127,7 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          this._state.update((state) => {
+          this.state.update((state) => {
             const index = state.categories.findIndex(
               (x) => x.id === response.id
             );
@@ -167,7 +158,7 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this._state.update((state) => ({
+          this.state.update((state) => ({
             ...state,
             status: StatusType.Success,
             categories: state.categories.filter((x) => x.id !== id),
@@ -189,9 +180,10 @@ export class CategoryService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          this._state.update((state) => ({
+          this.state.update((state) => ({
             ...state,
             status: StatusType.Success,
+            action: CategoryActionType.Sort,
             categories: state.categories.map((x) => {
               const sortedCategory = sortedCategories.find(
                 (y) => y.id === x.id
@@ -218,7 +210,7 @@ export class CategoryService {
     editMode: 'create' | 'update',
     category: CategoryResponse | null
   ) {
-    this._state.update((state) => ({
+    this.state.update((state) => ({
       ...state,
       editMode,
       selectedCategory: category,
@@ -227,7 +219,7 @@ export class CategoryService {
   }
 
   private updateStatus(status: StatusType, errors: string[] = []) {
-    this._state.update((state) => ({
+    this.state.update((state) => ({
       ...state,
       status,
       errors,

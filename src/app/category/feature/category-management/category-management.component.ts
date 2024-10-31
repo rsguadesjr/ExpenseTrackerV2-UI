@@ -1,4 +1,11 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { CategoryService } from '../../data-access/category.service';
 import { CommonModule } from '@angular/common';
@@ -17,6 +24,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
+import { CategoryActionType } from '../../constants/category-action-.type';
 
 @Component({
   selector: 'app-category-management',
@@ -44,19 +52,32 @@ export class CategoryManagementComponent {
   // state$ = this.categoryService.state$;
   categories = this.categoryService.categories;
   status = this.categoryService.status;
+  action = this.categoryService.action;
 
   canSaveSortingChange = computed(
     () => this.sortingChanged() && this.enableSorting()
   );
   enableSorting = signal<boolean>(false);
   sortingChanged = signal<boolean>(false);
-  sortCategories$ = new Subject<{ id: string; order: number }[]>();
+  sortedCategories = signal<{ id: string; order: number }[]>([]);
 
-  constructor() {
-    this.sortCategories$.pipe(takeUntilDestroyed()).subscribe((sortedItems) => {
-      this.categoryService.sortCategories(sortedItems);
+  sortCategoriesEffect = effect(() => {
+    const sortCategories = this.sortedCategories();
+    untracked(() => {
+      this.categoryService.sortCategories(sortCategories);
     });
-  }
+  });
+
+  onSortingChangeSaveEffect = effect(() => {
+    const status = this.status();
+    const action = this.action();
+
+    untracked(() => {
+      if (status === StatusType.Success && action === CategoryActionType.Sort) {
+        this.sortingChanged.set(false);
+      }
+    });
+  });
 
   createCategory() {
     this.categoryService.setCategoryForEdit('create', null);
@@ -97,7 +118,7 @@ export class CategoryManagementComponent {
       return;
     }
 
-    this.sortCategories$.next(
+    this.sortedCategories.set(
       this.categories().map((x, i) => ({
         id: x.id,
         order: i + 1,

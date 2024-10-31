@@ -32,13 +32,6 @@ export class AccountService {
   errors = computed(() => this._state().errors ?? []);
   action = computed(() => this._state().action);
 
-  constructor() {
-    effect(() => {
-      console.log('accounts', this.accounts());
-      console.log('currentAccount', this.currentAccount());
-    });
-  }
-
   resetState() {
     this._state.set({
       status: StatusType.Idle,
@@ -54,7 +47,6 @@ export class AccountService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          console.log('loadAccounts', response);
           let currentAccount = response.find((x) => x.isDefault);
           currentAccount = currentAccount || response[0];
 
@@ -220,7 +212,6 @@ export class AccountService {
         },
         error: (error: HttpErrorResponse) => {
           this.updateStatus(StatusType.Error, parseError(error));
-          console.error(error);
         },
       });
   }
