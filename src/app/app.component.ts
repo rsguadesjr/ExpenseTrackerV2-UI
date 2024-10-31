@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, untracked } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './auth/data-access/auth.service';
 import { CommonModule } from '@angular/common';
@@ -57,6 +57,22 @@ export class AppComponent {
 
   showProgressBar$ = this.uiService.showProgressBar$.asObservable();
 
+  currenctAccountChange = effect(() => {
+    const currentAccount = this.accountService.currentAccount();
+
+    untracked(() => {
+      if (currentAccount) {
+        const date = new Date();
+        this.transactionService.loadTransactions({
+          year: date.getFullYear(),
+          month: date.getMonth() + 1,
+          timezoneOffset: -date.getTimezoneOffset(),
+          accountId: currentAccount?.id,
+        });
+      }
+    });
+  });
+
   constructor() {
     this.isAuthenticated$
       .pipe(takeUntilDestroyed())
@@ -70,59 +86,5 @@ export class AppComponent {
           this.categoryService.resetState();
         }
       });
-
-    // this.accountService.state$
-    //   .pipe(
-    //     filter(
-    //       (state) => state.status === StatusType.Success && !state.editMode
-    //     ),
-    //     takeUntilDestroyed()
-    //   )
-    //   .subscribe((state) => {
-    //     // reset previous account's dashboard data
-    //     this.dashboardService.resetState();
-
-    //     const date = new Date();
-    //     this.transactionService.loadTransactions({
-    //       year: date.getFullYear(),
-    //       month: date.getMonth() + 1,
-    //       timezoneOffset: -date.getTimezoneOffset(),
-    //       accountId: state.currentAccount?.id,
-    //     });
-    //   });
-
-    // Dashboard related logic
-    // this.transactionService.state$
-    //   .pipe(
-    //     filter((state) => state.status === StatusType.Success),
-    //     takeUntilDestroyed()
-    //   )
-    //   .subscribe((state) => {
-    //     switch (state.action) {
-    //       case TransactionActionType.LoadTransactions:
-    //         this.dashboardService.setTransactions(state.transactions);
-    //         break;
-    //       case TransactionActionType.LoadTransactionById:
-    //         this.dashboardService.updateOrInsertTransaction(
-    //           state.selectedTransaction!
-    //         );
-    //         break;
-    //       case TransactionActionType.CreateTransaction:
-    //         this.dashboardService.updateOrInsertTransaction(
-    //           state.selectedTransaction!
-    //         );
-    //         break;
-    //       case TransactionActionType.UpdateTransaction:
-    //         this.dashboardService.updateOrInsertTransaction(
-    //           state.selectedTransaction!
-    //         );
-    //         break;
-    //       case TransactionActionType.DeleteTransaction:
-    //         this.dashboardService.removeTransaction(
-    //           state.selectedTransaction!.id
-    //         );
-    //         break;
-    //     }
-    //   });
   }
 }
