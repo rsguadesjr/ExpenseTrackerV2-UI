@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { StatusType } from '../../core/constants/status-type';
 import { BehaviorSubject, take } from 'rxjs';
@@ -8,6 +8,8 @@ import { AccountResponse } from '../models/account-response.model';
 import { AccountRequest } from '../models/account-request.model';
 import { parseError } from '../../core/helpers/error-helper';
 import { HttpClientService } from '../../core/services/http-client.service';
+import { state } from '@angular/animations';
+import { AccountActionType } from '../constants/account-action-type';
 
 @Injectable({
   providedIn: 'root',
@@ -16,19 +18,29 @@ export class AccountService {
   private http = inject(HttpClientService);
   private baseUrl = environment.API_BASE_URL + 'api/accounts';
 
-  private _state$ = new BehaviorSubject<AccountState>({
+  private _state = signal<AccountState>({
     status: StatusType.Idle,
     accounts: [],
     currentAccount: null,
   });
 
-  state$ = this._state$.asObservable();
-  get stateValue() {
-    return this._state$.value;
+  accounts = computed(() => this._state().accounts);
+  currentAccount = computed(() => this._state().currentAccount);
+  selectedAccount = computed(() => this._state().selectedAccount);
+  status = computed(() => this._state().status);
+  isEditMode = computed(() => this._state().editMode === 'update');
+  errors = computed(() => this._state().errors ?? []);
+  action = computed(() => this._state().action);
+
+  constructor() {
+    effect(() => {
+      console.log('accounts', this.accounts());
+      console.log('currentAccount', this.currentAccount());
+    });
   }
 
   resetState() {
-    this._state$.next({
+    this._state.set({
       status: StatusType.Idle,
       accounts: [],
       currentAccount: null,
@@ -42,23 +54,21 @@ export class AccountService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
+          console.log('loadAccounts', response);
           let currentAccount = response.find((x) => x.isDefault);
           currentAccount = currentAccount || response[0];
 
-          this._state$.next({
-            ...this._state$.value,
+          this._state.update((state) => ({
+            ...state,
             status: StatusType.Success,
+            action: AccountActionType.LoadAll,
             accounts: response,
             currentAccount,
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
         },
       });
   }
@@ -74,22 +84,20 @@ export class AccountService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          const state = this._state$.value;
-          const index = state.accounts.findIndex((x) => x.id === response.id);
-          state.accounts[index] = response;
-          this._state$.next({
-            ...state,
-            status: StatusType.Success,
-            selectedAccount: response,
-            errors: [],
+          this._state.update((state) => {
+            const index = state.accounts.findIndex((x) => x.id === response.id);
+            state.accounts[index] = response;
+            return {
+              ...state,
+              status: StatusType.Success,
+              action: AccountActionType.LoadById,
+              selectedAccount: response,
+              errors: [],
+            };
           });
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
         },
       });
   }
@@ -101,31 +109,26 @@ export class AccountService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          const state = this._state$.value;
-
           // update accounts isDefault field if the updated account is default
+          let accounts = this._state().accounts;
           if (response.isDefault) {
-            state.accounts.forEach((x) => {
-              if (x.id !== response.id) {
-                x.isDefault = false;
-              }
-            });
+            accounts = this._state().accounts.map((x) => ({
+              ...x,
+              isDefault: x.id === response.id,
+            }));
           }
 
-          this._state$.next({
+          this._state.update((state) => ({
             ...state,
-            accounts: [response, ...state.accounts],
+            accounts: [response, ...accounts],
             status: StatusType.Success,
+            action: AccountActionType.Create,
             selectedAccount: response,
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
         },
       });
   }
@@ -141,43 +144,47 @@ export class AccountService {
       .pipe(take(1))
       .subscribe({
         next: (response) => {
-          const state = this._state$.value;
-          const index = state.accounts.findIndex((x) => x.id === response.id);
-          state.accounts[index] = response;
+          let accounts = this._state().accounts;
+          const index = accounts.findIndex((x) => x.id === response.id);
+          accounts[index] = response;
 
-          // update current account it was updated to inactive
-          if (response.id === state.currentAccount?.id && !response.isActive) {
-            state.currentAccount =
-              state.accounts
+          // if currentAccount was update to inactive, set the default account as current account
+          let currentAccount = this._state().currentAccount;
+          let editMode = this._state().editMode;
+          if (
+            response.id === this._state().currentAccount?.id &&
+            !response.isActive
+          ) {
+            currentAccount =
+              accounts
                 .filter((x) => x.id !== response.id)
-                .find((x) => x.isDefault) ?? state.accounts[0];
+                .find((x) => x.isDefault) ?? accounts[0];
 
             // set edit mode to null to force load transactions
-            state.editMode = null;
+            editMode = null;
           }
-
           // update accounts isDefault field if the updated account is default
+
           if (response.isDefault) {
-            state.accounts.forEach((x) => {
-              if (x.id !== response.id) {
-                x.isDefault = false;
-              }
-            });
+            accounts = this._state().accounts.map((x) => ({
+              ...x,
+              isDefault: x.id === response.id,
+            }));
           }
 
-          this._state$.next({
+          this._state.update((state) => ({
             ...state,
             status: StatusType.Success,
             selectedAccount: response,
+            action: AccountActionType.Update,
+            editMode,
+            currentAccount,
+            accounts,
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
         },
       });
   }
@@ -189,31 +196,30 @@ export class AccountService {
       .pipe(take(1))
       .subscribe({
         next: () => {
-          const state = this._state$.value;
-          const accounts = state.accounts.filter((x) => x.id !== id);
+          const accounts = this._state().accounts.filter((x) => x.id !== id);
 
           // update current account if it was deleted
-          if (id === state.currentAccount?.id) {
-            state.currentAccount =
-              accounts.find((x) => x.isDefault) ?? accounts[0];
+          let currentAccount = this._state().currentAccount;
+          let editMode = this._state().editMode;
+          if (id === currentAccount?.id) {
+            currentAccount = accounts.find((x) => x.isDefault) ?? accounts[0];
 
             // set edit mode to null to force load transactions
-            state.editMode = null;
+            editMode = null;
           }
 
-          this._state$.next({
+          this._state.update((state) => ({
             ...state,
             accounts,
             status: StatusType.Success,
+            action: AccountActionType.Delete,
+            currentAccount,
+            editMode,
             errors: [],
-          });
+          }));
         },
         error: (error: HttpErrorResponse) => {
-          this._state$.next({
-            ...this._state$.value,
-            status: StatusType.Error,
-            errors: parseError(error),
-          });
+          this.updateStatus(StatusType.Error, parseError(error));
           console.error(error);
         },
       });
@@ -223,29 +229,28 @@ export class AccountService {
     account: AccountResponse | null,
     editMode: 'create' | 'update'
   ) {
-    this._state$.next({
-      ...this._state$.value,
-      selectedAccount: account,
+    this._state.update((state) => ({
+      ...state,
       editMode,
+      selectedAccount: account,
       errors: [],
-    });
+      action: AccountActionType.LoadById,
+    }));
   }
 
   setCurrentAccount(id: string) {
-    const state = this._state$.value;
-    const currentAccount = state.accounts.find((x) => x.id === id)!;
-    this._state$.next({
+    const currentAccount = this._state().accounts.find((x) => x.id === id)!;
+    this._state.update((state) => ({
       ...state,
       currentAccount,
-      editMode: null,
-    });
+    }));
   }
 
   private updateStatus(status: StatusType, errors: string[] = []) {
-    this._state$.next({
-      ...this._state$.value,
+    this._state.update((state) => ({
+      ...state,
       status,
       errors,
-    });
+    }));
   }
 }

@@ -1,4 +1,5 @@
 import { StatusType } from '../../core/constants/status-type';
+import { AccountActionType } from '../constants/account-action-type';
 import { AccountResponse } from './account-response.model';
 
 export interface AccountState {
@@ -13,4 +14,6 @@ export interface AccountState {
 
   // used for editing account
   editMode?: 'create' | 'update' | null;
+
+  action?: AccountActionType;
 }

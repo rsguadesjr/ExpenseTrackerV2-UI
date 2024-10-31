@@ -8,6 +8,7 @@ import { CategoryResponse } from '../models/category-response.model';
 import { CategoryRequest } from '../models/category-request.model';
 import { parseError } from '../../core/helpers/error-helper';
 import { HttpClientService } from '../../core/services/http-client.service';
+import { CategoryActionType } from '../constants/category-action-.type';
 
 @Injectable({
   providedIn: 'root',
@@ -59,6 +60,7 @@ export class CategoryService {
             ...state,
             status: StatusType.Success,
             categories: response,
+            action: CategoryActionType.LoadAll,
             errors: [],
           }));
         },
@@ -89,6 +91,7 @@ export class CategoryService {
               ...state,
               status: StatusType.Success,
               selectedCategory: response,
+              action: CategoryActionType.LoadById,
               errors: [],
             };
           });
@@ -111,6 +114,7 @@ export class CategoryService {
             ...state,
             status: StatusType.Success,
             categories: [...state.categories, response],
+            action: CategoryActionType.Create,
             errors: [],
           }));
         },
@@ -141,6 +145,7 @@ export class CategoryService {
               ...state,
               status: StatusType.Success,
               selectedCategory: response,
+              action: CategoryActionType.Update,
               errors: [],
             };
           });
@@ -166,6 +171,7 @@ export class CategoryService {
             ...state,
             status: StatusType.Success,
             categories: state.categories.filter((x) => x.id !== id),
+            action: CategoryActionType.Delete,
             errors: [],
           }));
         },

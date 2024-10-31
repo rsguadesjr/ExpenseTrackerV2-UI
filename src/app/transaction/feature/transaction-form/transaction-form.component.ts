@@ -105,7 +105,7 @@ export class TransactionFormComponent {
       transactionDate: this.form.value.transactionDate?.toISOString()!,
       categoryId: this.form.value.categoryId!,
       tags: this.form.value.tags!,
-      accountId: this.accountService.stateValue.currentAccount?.id!,
+      accountId: this.accountService.currentAccount()?.id!,
     };
 
     if (request.id) {

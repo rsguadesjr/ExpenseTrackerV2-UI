@@ -37,7 +37,7 @@ export class AccountManagementComponent {
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
 
-  state$ = this.accountService.state$;
+  accounts = this.accountService.accounts;
 
   createAccount() {
     this.accountService.setAccountForEdit(null, 'create');

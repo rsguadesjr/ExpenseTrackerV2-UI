@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, computed, effect, inject, untracked } from '@angular/core';
 import {
   AbstractControlOptions,
   FormControl,
@@ -18,6 +18,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { ButtonModule } from 'primeng/button';
 import { MessagesModule } from 'primeng/messages';
 import { Message } from 'primeng/api';
+import { AccountActionType } from '../../constants/account-action-type';
 
 @Component({
   selector: 'app-account-form',
@@ -37,61 +38,52 @@ export class AccountFormComponent {
   private accountService = inject(AccountService);
   private ref = inject(DynamicDialogRef);
 
-  state$ = this.accountService.state$;
-  errorMessages$ = this.state$.pipe(
-    map((state) => state.errors || []),
-    map((errors) =>
-      errors.map(
+  accounts = this.accountService.accounts;
+  status = this.accountService.status;
+  isEditMode = this.accountService.isEditMode;
+  selectedAccount = this.accountService.selectedAccount;
+  action = this.accountService.action;
+  errorMessages = computed(() =>
+    this.accountService
+      .errors()
+      .map(
         (error) => ({ severity: StatusType.Error, detail: error } as Message)
       )
-    )
   );
 
-  form = new FormGroup(
-    {
-      id: new FormControl(),
-      name: new FormControl('', Validators.required),
-      description: new FormControl('', Validators.required),
-      isActive: new FormControl(true),
-      isDefault: new FormControl(false),
-    },
-    {
-      validators: this.inActiveMustNotBeDefaultValidator,
-    } as AbstractControlOptions
-  );
+  form = new FormGroup({
+    id: new FormControl(),
+    name: new FormControl('', Validators.required),
+    description: new FormControl('', Validators.required),
+    isActive: new FormControl(true),
+    isDefault: new FormControl(false),
+  });
+
+  closeOnSuccessEffect = effect(() => {
+    if (
+      (this.action() === AccountActionType.Create ||
+        this.action() === AccountActionType.Update) &&
+      this.status() === StatusType.Success
+    ) {
+      this.ref.close();
+    }
+  });
 
   constructor() {
-    this.state$.pipe(take(1)).subscribe((state) => {
-      if (state.editMode === 'update' && state.selectedAccount) {
-        this.form.patchValue({
-          id: state.selectedAccount?.id,
-          name: state.selectedAccount?.name,
-          description: state.selectedAccount?.description,
-          isActive: state.selectedAccount?.isActive,
-          isDefault: state.selectedAccount?.isDefault,
-        });
-      }
-    });
-
-    this.state$
-      .pipe(
-        skip(1),
-        map((state) => state.status),
-        takeUntilDestroyed()
-      )
-      .subscribe((status) => {
-        if (status === StatusType.Success) {
-          this.ref.close();
-        }
+    if (this.selectedAccount() && this.isEditMode()) {
+      this.form.patchValue({
+        id: this.selectedAccount()?.id,
+        name: this.selectedAccount()?.name,
+        description: this.selectedAccount()?.description,
+        isActive: this.selectedAccount()?.isActive,
+        isDefault: this.selectedAccount()?.isDefault,
       });
+    }
   }
 
   onSubmit() {
     this.form.markAllAsTouched();
-    if (
-      this.form.invalid ||
-      this.accountService.stateValue.status === StatusType.Loading
-    ) {
+    if (this.form.invalid || this.status() === StatusType.Loading) {
       return;
     }
 

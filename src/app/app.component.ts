@@ -71,25 +71,25 @@ export class AppComponent {
         }
       });
 
-    this.accountService.state$
-      .pipe(
-        filter(
-          (state) => state.status === StatusType.Success && !state.editMode
-        ),
-        takeUntilDestroyed()
-      )
-      .subscribe((state) => {
-        // reset previous account's dashboard data
-        this.dashboardService.resetState();
+    // this.accountService.state$
+    //   .pipe(
+    //     filter(
+    //       (state) => state.status === StatusType.Success && !state.editMode
+    //     ),
+    //     takeUntilDestroyed()
+    //   )
+    //   .subscribe((state) => {
+    //     // reset previous account's dashboard data
+    //     this.dashboardService.resetState();
 
-        const date = new Date();
-        this.transactionService.loadTransactions({
-          year: date.getFullYear(),
-          month: date.getMonth() + 1,
-          timezoneOffset: -date.getTimezoneOffset(),
-          accountId: state.currentAccount?.id,
-        });
-      });
+    //     const date = new Date();
+    //     this.transactionService.loadTransactions({
+    //       year: date.getFullYear(),
+    //       month: date.getMonth() + 1,
+    //       timezoneOffset: -date.getTimezoneOffset(),
+    //       accountId: state.currentAccount?.id,
+    //     });
+    //   });
 
     // Dashboard related logic
     // this.transactionService.state$

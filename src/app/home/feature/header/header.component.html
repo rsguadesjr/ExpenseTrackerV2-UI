@@ -9,7 +9,7 @@
 
     <!-- <span class="mr-2"><b>{{ authState.user?.name }}</b></span> -->
     <div class="flex align-items-center gap-2">
-      <p-dropdown id="categoryId" [(ngModel)]="selectedAccount" [options]="(accounts$ | async) ?? []" optionLabel="name"
+      <p-dropdown id="categoryId" [ngModel]="currentAccount()?.id" [options]="accounts()" optionLabel="name"
         optionValue="id" (onChange)="onAccountChange($event)"></p-dropdown>
       @if (authState.user?.picture){
       <p-avatar [image]="authState.user.picture" shape="circle" (click)="avatarMenu.toggle($event)"

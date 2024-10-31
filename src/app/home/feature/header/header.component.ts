@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import { ConfirmationService, MenuItem, MessageService } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
@@ -45,9 +45,9 @@ export class HeaderComponent {
   private messageService = inject(MessageService);
   uiService = inject(UiService);
 
-  accounts$ = this.accountService.state$.pipe(
-    map((state) => state.accounts.filter((a) => a.isActive))
-  );
+  accounts = this.accountService.accounts;
+  currentAccount = this.accountService.currentAccount;
+
   selectedAccount!: string;
   authState$ = this.authService.authState$;
   items: MenuItem[] = [
@@ -71,17 +71,17 @@ export class HeaderComponent {
   ];
 
   constructor() {
-    this.accountService.state$.pipe(takeUntilDestroyed()).subscribe((state) => {
-      if (state.currentAccount) {
-        this.selectedAccount = state.currentAccount.id;
-      }
-    });
+    // this.accountService.state$.pipe(takeUntilDestroyed()).subscribe((state) => {
+    //   if (state.currentAccount) {
+    //     this.selectedAccount = state.currentAccount.id;
+    //   }
+    // });
   }
 
   onAccountChange({ value }: { value: string }) {
-    const selectedAccount = this.accountService.stateValue.accounts.find(
-      (a) => a.id === value
-    );
+    const selectedAccount = this.accountService
+      .accounts()
+      .find((a) => a.id === value);
     this.confirmationService.confirm({
       header: 'Confirmation',
       icon: 'pi pi-exclamation-circle',
@@ -99,8 +99,6 @@ export class HeaderComponent {
       },
       reject: () => {
         // revert to previous account
-        this.selectedAccount =
-          this.accountService.stateValue.currentAccount!.id;
       },
     });
   }
