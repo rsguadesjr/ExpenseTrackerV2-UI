@@ -6,10 +6,10 @@ import { finalize } from 'rxjs';
 export const httpLoadingInterceptor: HttpInterceptorFn = (req, next) => {
   const uiService = inject(UiService);
 
-  uiService.showProgressBar$.next(true);
+  uiService.toggleProgressBar(true);
   return next(req).pipe(
     finalize(() => {
-      uiService.showProgressBar$.next(false);
+      uiService.toggleProgressBar(false);
     })
   );
 };

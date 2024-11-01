@@ -43,10 +43,11 @@ export class HeaderComponent {
   private accountService = inject(AccountService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
-  uiService = inject(UiService);
+  private uiService = inject(UiService);
 
   accounts = this.accountService.accounts;
   currentAccount = this.accountService.currentAccount;
+  sidebarToggle = this.uiService.sidebarToggle;
 
   selectedAccount!: string;
   authState$ = this.authService.authState$;
@@ -101,5 +102,9 @@ export class HeaderComponent {
         // revert to previous account
       },
     });
+  }
+
+  toggleSideBar($event: Event, visible: boolean) {
+    this.uiService.toggleSidebar(!visible);
   }
 }

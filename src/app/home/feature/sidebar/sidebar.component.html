@@ -1,4 +1,4 @@
-<p-sidebar #sidebarRef [(visible)]="uiService.sidebarVisible" position="left">
+<p-sidebar #sidebarRef [visible]="sidebarToggle()" (visibleChange)="onSidebarVisibleChange($event)" position="left">
   <ng-template pTemplate="headless">
     <div class="flex flex-column h-full">
       <div class="flex align-items-center justify-content-between px-4 pt-3 flex-shrink-0">

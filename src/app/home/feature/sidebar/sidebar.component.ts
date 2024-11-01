@@ -18,9 +18,10 @@ import { AuthService } from '../../../auth/data-access/auth.service';
 export class SidebarComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
+  private uiService = inject(UiService);
 
   @ViewChild('sidebarRef') sidebarRef!: Sidebar;
-  uiService = inject(UiService);
+  sidebarToggle = this.uiService.sidebarToggle;
 
   items: MenuItem[] = [
     {
@@ -52,16 +53,21 @@ export class SidebarComponent {
   ];
 
   closeCallback(e: Event): void {
+    console.log('closeCallback', e);
     this.sidebarRef.close(e);
   }
 
   navigate(url: string): void {
-    this.uiService.sidebarVisible = false;
+    this.uiService.toggleSidebar(false);
     this.router.navigateByUrl(url);
   }
 
+  onSidebarVisibleChange(visible: boolean) {
+    this.uiService.toggleSidebar(visible);
+  }
+
   async signOut() {
-    this.uiService.sidebarVisible = false;
+    this.uiService.toggleSidebar(false);
     await this.authService.signOut();
     this.router.navigate(['/login'], {
       queryParams: { returnUrl: this.router.url },

@@ -1,4 +1,4 @@
-import { Component, effect, inject, untracked } from '@angular/core';
+import { Component, computed, effect, inject, untracked } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './auth/data-access/auth.service';
 import { CommonModule } from '@angular/common';
@@ -55,7 +55,7 @@ export class AppComponent {
   title = 'ExpenseTracker';
   isAuthenticated$ = this.authService.isAuthenticated$;
 
-  showProgressBar$ = this.uiService.showProgressBar$.asObservable();
+  showProgressBar = this.uiService.progressBarToggle;
 
   currenctAccountChange = effect(() => {
     const currentAccount = this.accountService.currentAccount();
