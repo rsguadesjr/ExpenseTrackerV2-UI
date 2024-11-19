@@ -119,7 +119,7 @@ export class DashboardComponent {
   recentTransactions = computed(() => this.monthlyTransactions().slice(0, 5));
 
   topTransactions = computed(() => {
-    return this.monthlyTransactions()
+    return [...this.monthlyTransactions()]
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 5);
   });
@@ -130,12 +130,13 @@ export class DashboardComponent {
       return null;
     }
 
-    return dailyTransactionData
-      .slice()
-      .sort((a, b) => b.totalAmount - a.totalAmount)[0];
+    return [...dailyTransactionData].sort(
+      (a, b) => b.totalAmount - a.totalAmount
+    )[0];
   });
 
   categorizedData = computed(() => {
+    const totalAmount = this.totalTransactionAmount();
     const transactions = this.monthlyTransactions();
     let categories = this.categories().map((x) => ({ id: x.id, name: x.name }));
 
@@ -147,9 +148,7 @@ export class DashboardComponent {
       categories = [...categories, { id: null!, name: 'Uncategorized' }];
     }
 
-    const totalAmount = this.totalTransactionAmount();
-
-    return categories.map((category) => {
+    const result = categories.map((category) => {
       const amount = transactions
         .filter((x) => x.category?.id === category.id)
         .reduce((acc, curr) => acc + curr.amount, 0);
@@ -160,6 +159,8 @@ export class DashboardComponent {
         percentage: (amount / totalAmount) * 100,
       };
     });
+
+    return result.sort((a, b) => b.totalAmount - a.totalAmount);
   });
 
   highestCategoryTransaction = computed(() => {
@@ -168,7 +169,7 @@ export class DashboardComponent {
       return null;
     }
 
-    return categorizedData.sort((a, b) => b.totalAmount - a.totalAmount)[0];
+    return categorizedData[0];
   });
 
   tableMenuItems: MenuItem[] = [
