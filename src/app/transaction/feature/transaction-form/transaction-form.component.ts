@@ -1,27 +1,24 @@
-import { Component, computed, effect, inject } from '@angular/core';
+import { Component, effect, inject } from '@angular/core';
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { TransactionService } from '../../data-access/transaction.service';
 import { TransactionRequest } from '../../models/transaction-request.model';
 import { CommonModule } from '@angular/common';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DropdownModule } from 'primeng/dropdown';
 import { ButtonModule } from 'primeng/button';
-import { from, map, of, skip } from 'rxjs';
 import { ChipsModule } from 'primeng/chips';
 import { CalendarModule } from 'primeng/calendar';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { CategoryService } from '../../../category/data-access/category.service';
 import { AccountService } from '../../../account/data-access/account.service';
 import { MessagesModule } from 'primeng/messages';
 import { StatusType } from '../../../core/constants/status-type';
-import { Message } from 'primeng/api';
+import { TransactionStore } from '../../data-access/transaction.store';
 
 @Component({
   selector: 'app-transaction-form',
@@ -41,21 +38,19 @@ import { Message } from 'primeng/api';
   styleUrl: './transaction-form.component.scss',
 })
 export class TransactionFormComponent {
-  private transactionService = inject(TransactionService);
   private categoryService = inject(CategoryService);
   private accountService = inject(AccountService);
   private ref = inject(DynamicDialogRef);
+  private transactionStore = inject(TransactionStore);
 
-  transactions = this.transactionService.transactions;
-  selectedTransaction = this.transactionService.selectedTranscation;
-  isEditMode = this.transactionService.isEditMode;
-  status = this.transactionService.status;
+  transactions = this.transactionStore.transactions;
+  selectedTransaction = this.transactionStore.selectedTransaction;
+  isEditMode = this.transactionStore.isEditMode;
+  status = this.transactionStore.status;
 
   categories = this.categoryService.categories;
 
-  errorMessages = this.transactionService
-    .errors()
-    .map((error) => ({ severity: StatusType.Error, detail: error } as Message));
+  errorMessages = this.transactionStore.errorMessages;
 
   form = new FormGroup({
     id: new FormControl<string | null>(null),
@@ -83,18 +78,16 @@ export class TransactionFormComponent {
       });
     }
 
-    toObservable(this.status)
-      .pipe(skip(1), takeUntilDestroyed())
-      .subscribe((status) => {
-        if (status === 'success') {
-          this.ref.close();
-        }
-      });
+    effect(() => {
+      if (this.status() === StatusType.Success) {
+        this.ref.close();
+      }
+    });
   }
 
   onSubmit() {
     this.form.markAllAsTouched();
-    if (this.form.invalid || this.status() === 'loading') {
+    if (this.form.invalid || this.status() === StatusType.Loading) {
       return;
     }
 
@@ -109,9 +102,9 @@ export class TransactionFormComponent {
     };
 
     if (request.id) {
-      this.transactionService.updateTransaction(request, true);
+      this.transactionStore.updateTransaction({ transaction: request });
     } else {
-      this.transactionService.createTransaction(request, true);
+      this.transactionStore.createTransaction({ transaction: request });
     }
   }
 

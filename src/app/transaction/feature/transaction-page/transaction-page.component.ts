@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  computed,
+  effect,
+  inject,
+  signal,
+  untracked,
+} from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { TransactionService } from '../../data-access/transaction.service';
 import { TableModule } from 'primeng/table';
@@ -21,6 +29,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { AccountService } from '../../../account/data-access/account.service';
+import { TransactionStore } from '../../data-access/transaction.store';
 
 @Component({
   selector: 'app-transaction-page',
@@ -46,14 +55,13 @@ import { AccountService } from '../../../account/data-access/account.service';
   styleUrl: './transaction-page.component.scss',
 })
 export class TransactionPageComponent implements OnInit {
-  private transactionService = inject(TransactionService);
   private dialogService = inject(DialogService);
   private confirmationService = inject(ConfirmationService);
   private accountService = inject(AccountService);
+  private readonly transactionStore = inject(TransactionStore);
 
-  transactions = this.transactionService.transactions;
-  status = this.transactionService.status;
-  // transactionsState$ = this.transactionService.state$;
+  transactions = this.transactionStore.transactions;
+  status = this.transactionStore.status;
   calendarData = computed(() =>
     this.transactions().map((t) => ({
       date: new Date(t.transactionDate),
@@ -61,40 +69,28 @@ export class TransactionPageComponent implements OnInit {
     }))
   );
 
-  // calendarData$ = this.transactionService.state$.pipe(
-  //   map((state) =>
-  //     state.transactions.map((t) => ({
-  //       date: new Date(t.transactionDate),
-  //       value: t.amount,
-  //     }))
-  //   )
-  // );
-
-  dateFilter$ = new BehaviorSubject({
-    startDate: new Date(),
-    endDate: new Date(),
-  });
+  dateFilter = signal({ startDate: new Date(), endDate: new Date() });
 
   constructor() {
-    // skip initial load of data
-    // sicne loading of initial data is handled by the app component
-    this.dateFilter$
-      .pipe(skip(1), debounceTime(500), takeUntilDestroyed())
-      .subscribe((event) => {
-        // TODO: update parameters in the future, currently only year and month
-        this.transactionService.loadTransactions({
-          year: event.startDate.getFullYear(),
-          month: event.startDate.getMonth() + 1,
-          timezoneOffset: -new Date().getTimezoneOffset(),
-          accountId: this.accountService.currentAccount()?.id,
-        });
-      });
+    // effect(() => {
+    //   const startDate = this.dateFilter().startDate;
+    //   untracked(() => {
+    //     this.transactionStore.loadTransactions({
+    //       query: {
+    //         year: startDate.getFullYear(),
+    //         month: startDate.getMonth() + 1,
+    //         timezoneOffset: -new Date().getTimezoneOffset(),
+    //         accountId: this.accountService.currentAccount()?.id,
+    //       },
+    //     });
+    //   });
+    // });
   }
 
   ngOnInit(): void {}
 
   editTransaction(transaction: TransactionResponse) {
-    this.transactionService.setEditMode('update', transaction);
+    this.transactionStore.setEditMode('update', transaction);
     this.dialogService.open(TransactionFormComponent, {
       header: 'Update',
       width: '420px',
@@ -102,7 +98,7 @@ export class TransactionPageComponent implements OnInit {
   }
 
   createTransaction() {
-    this.transactionService.setEditMode('create');
+    this.transactionStore.setEditMode('create');
     this.dialogService.open(TransactionFormComponent, {
       header: 'Create',
       width: '420px',
@@ -117,13 +113,17 @@ export class TransactionPageComponent implements OnInit {
       message: 'Are you sure you want to delete this transaction?',
       acceptButtonStyleClass: 'p-button-danger',
       accept: () => {
-        this.transactionService.deleteTransaction(transaction.id);
+        this.transactionStore.deleteTransaction({ id: transaction.id });
       },
       reject: () => {},
     });
   }
 
   onDateFilter(event: { startDate: Date; endDate: Date }) {
-    this.dateFilter$.next(event);
+    this.transactionStore.setDateRange({
+      start: event.startDate,
+      end: event.endDate,
+    });
+    // this.dateFilter.set(event);
   }
 }

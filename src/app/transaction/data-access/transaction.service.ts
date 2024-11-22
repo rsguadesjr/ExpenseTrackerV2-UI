@@ -21,7 +21,7 @@ export class TransactionService {
   private _state = signal<TransactionState>({
     status: StatusType.Idle,
     transactions: [],
-  });
+  } as unknown as TransactionState);
 
   // Selector
   transactions = computed(() => this._state().transactions);
@@ -34,7 +34,7 @@ export class TransactionService {
     this._state.set({
       status: StatusType.Idle,
       transactions: [],
-    });
+    } as unknown as TransactionState);
   }
 
   loadTransactions(query: TrasactionQuery, skipGlobalErrorHandling = false) {
@@ -187,7 +187,7 @@ export class TransactionService {
     this._state.update((state) => ({
       ...state,
       editMode,
-      selectedTransaction: transaction,
+      selectedTransaction: transaction as TransactionResponse,
       status: StatusType.Idle,
     }));
   }

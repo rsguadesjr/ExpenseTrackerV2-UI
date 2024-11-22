@@ -1,6 +1,6 @@
 <form [formGroup]="form" class="flex flex-column gap-2" (ngSubmit)="onSubmit()">
 
-  <p-messages *ngIf="errorMessages as errorMessages" [value]="errorMessages" [enableService]="false" />
+  <p-messages [value]="errorMessages()" [enableService]="false" />
 
   <div class="flex flex-column gap-2 p-fluid">
     <label for="amount">Amount</label>

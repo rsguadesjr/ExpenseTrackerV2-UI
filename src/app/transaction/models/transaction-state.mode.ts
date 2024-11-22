@@ -4,14 +4,13 @@ import { TransactionResponse } from './transaction-response.mode';
 
 export interface TransactionState {
   status: StatusType;
-  errors?: string[];
+  errors: string[];
   transactions: TransactionResponse[];
-  selectedTransaction?: TransactionResponse;
-  dateRange?: {
+  selectedTransaction: TransactionResponse | null;
+  dateRange: {
     start: Date;
     end: Date;
   };
-  action?: TransactionActionType;
-
-  editMode?: 'create' | 'update';
+  action: TransactionActionType | null;
+  editMode: 'create' | 'update' | null;
 }
