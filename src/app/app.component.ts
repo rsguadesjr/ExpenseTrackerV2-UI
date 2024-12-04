@@ -57,22 +57,6 @@ export class AppComponent {
 
   showProgressBar = this.uiService.progressBarToggle;
 
-  currenctAccountChange = effect(() => {
-    const currentAccount = this.accountService.currentAccount();
-
-    untracked(() => {
-      if (currentAccount) {
-        const date = new Date();
-        this.transactionService.loadTransactions({
-          year: date.getFullYear(),
-          month: date.getMonth() + 1,
-          timezoneOffset: -date.getTimezoneOffset(),
-          accountId: currentAccount?.id,
-        });
-      }
-    });
-  });
-
   constructor() {
     this.isAuthenticated$
       .pipe(takeUntilDestroyed())

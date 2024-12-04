@@ -5,14 +5,9 @@
           currentAccount()?.name }}</span>
       </div>
 
-      <div>
-        Showing data from
-        <span class="text-green-500 font-medium">{{ dailyTransactionData()[0].date | date : 'longDate' }}</span>
-        to
-        <span class="text-green-500 font-medium">{{ dailyTransactionData()[dailyTransactionData().length - 1].date |
-          date
-          :
-          'longDate' }}</span>
+      <div class="flex align-items-center">
+        Showing data for <span class="font-bold text-xl ml-2 text-primary">{{
+          date() | date : 'MMMM yyyy' }}</span>
       </div>
     </div>
   </div>

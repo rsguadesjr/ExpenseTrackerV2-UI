@@ -45,6 +45,7 @@ export class TransactionFilterPanelComponent {
     default: boolean;
   }[] = [];
 
+  // TODO: load date based on the filter state
   filterForm = new FormGroup({
     viewMode: new FormControl(this.viewModes[0]),
     month: new FormControl(new Date()),

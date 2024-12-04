@@ -1,4 +1,5 @@
 import {
+  getState,
   patchState,
   signalStore,
   StateSignals,
@@ -24,15 +25,35 @@ import { HttpClientService } from '../../core/services/http-client.service';
 import { AccountService } from '../../account/data-access/account.service';
 import { Message } from 'primeng/api';
 import { TransactionRequest } from '../models/transaction-request.model';
+import { isSameMonth, startOfMonth } from 'date-fns';
+
+const currentDate = new Date();
 
 const initialState: TransactionState = {
   status: StatusType.Idle,
   transactions: [],
   selectedTransaction: null,
   action: null,
-  dateRange: { start: new Date(), end: new Date() },
+  dateRange: { start: currentDate, end: currentDate },
   editMode: null,
   errors: [],
+  filter: {
+    month: currentDate.getMonth(),
+    year: currentDate.getFullYear(),
+    timezoneOffset: currentDate.getTimezoneOffset(),
+    accountId: undefined,
+  },
+
+  dashboard: {
+    isInitialized: false,
+    transactions: [],
+    filter: {
+      month: currentDate.getMonth(),
+      year: currentDate.getFullYear(),
+      timezoneOffset: currentDate.getTimezoneOffset(),
+      accountId: undefined,
+    },
+  },
 };
 
 const baseUrl = environment.API_BASE_URL + 'api/transactions';
@@ -67,7 +88,16 @@ export const TransactionStore = signalStore(
     },
 
     setDateRange: (dateRange: { start: Date; end: Date }) => {
-      patchState(store, { dateRange, status: StatusType.Idle });
+      patchState(store, {
+        dateRange,
+        filter: {
+          ...store.filter(),
+          month: dateRange.start.getMonth(),
+          year: dateRange.start.getFullYear(),
+          timezoneOffset: dateRange.start.getTimezoneOffset(),
+        },
+        status: StatusType.Idle,
+      });
     },
 
     loadTransactions: rxMethod<{
@@ -76,7 +106,6 @@ export const TransactionStore = signalStore(
     }>(
       pipe(
         tap(() => {
-          console.log('loadTransactions');
           showLoading(store, TransactionActionType.LoadTransactions);
         }),
         switchMap(({ query, skipGlobalErrorHandling }) =>
@@ -242,24 +271,145 @@ export const TransactionStore = signalStore(
         )
       )
     ),
+
+    // methods for dashboard transactions
+    setDashboardTransactions: (transactions: TransactionResponse[]) => {
+      const dashboardFilter = store.dashboard().filter;
+      const dashboardTransactions = transactions.filter((x) => {
+        const transactionDate = new Date(x.transactionDate);
+
+        return (
+          dashboardFilter.year === transactionDate.getFullYear() &&
+          dashboardFilter.month === transactionDate.getMonth() &&
+          dashboardFilter.timezoneOffset === transactionDate.getTimezoneOffset()
+        );
+      });
+      console.log('[DEBUG] setDashboardTransactions', {
+        dashboardFilter,
+        dashboardTransactions,
+        transactions,
+      });
+      patchState(store, {
+        dashboard: {
+          ...store.dashboard(),
+          isInitialized: true,
+          transactions: dashboardTransactions,
+        },
+      });
+    },
+
+    updateDashboardTransactions: () => {
+      const selectedTransaction = store.selectedTransaction();
+      if (!selectedTransaction) {
+        return;
+      }
+
+      const dashboard = store.dashboard();
+      const filter = dashboard.filter;
+      const dashboardTransactions = dashboard.transactions;
+      const date = new Date(filter.year, filter.month);
+      if (
+        selectedTransaction &&
+        isSameMonth(selectedTransaction.transactionDate, date)
+      ) {
+        const index = dashboardTransactions?.findIndex(
+          (x) => x.id === selectedTransaction.id
+        );
+        if (index > -1) {
+          dashboardTransactions[index] = selectedTransaction;
+        } else {
+          dashboardTransactions.push(selectedTransaction);
+        }
+        patchState(store, {
+          dashboard: {
+            ...store.dashboard(),
+            transactions: dashboardTransactions,
+          },
+        });
+      }
+    },
   })),
   withHooks((store) => ({
     onInit: () => {
       const accountService = inject(AccountService);
+
+      // When dashboard is not yet initialized, set dashboard transactions based on transactions
       effect(() => {
-        const date = store.dateRange().start;
-        const accountId = accountService.currentAccount()?.id;
+        const status = store.status();
+        if (status !== StatusType.Success) {
+          return;
+        }
+
+        const transactions = store.transactions();
         untracked(() => {
+          const dashboard = store.dashboard();
+          if (!dashboard.isInitialized) {
+            store.setDashboardTransactions(transactions);
+            return;
+          }
+        });
+      });
+
+      //
+      // When UpdateTransaction or CreateTransaction action is successful, update dashboard transactions
+      //
+      effect(() => {
+        const status = store.status();
+        if (status !== StatusType.Success) {
+          return;
+        }
+
+        const action = store.action();
+        if (
+          ![
+            TransactionActionType.UpdateTransaction,
+            TransactionActionType.CreateTransaction,
+          ].includes(action!)
+        ) {
+          return;
+        }
+
+        const selectedTransaction = store.selectedTransaction();
+        if (selectedTransaction) {
+          untracked(() => {
+            store.updateDashboardTransactions();
+          });
+        }
+      });
+
+      //
+      // When filter changes, load transactions
+      //
+      effect(() => {
+        const filter = store.filter();
+        untracked(() => {
+          const accountId = accountService.currentAccount()?.id;
           store.loadTransactions({
             query: {
-              year: date.getFullYear(),
-              month: date.getMonth() + 1,
-              timezoneOffset: -new Date().getTimezoneOffset(),
+              year: filter.year,
+              month: filter.month + 1,
+              timezoneOffset: -filter.timezoneOffset,
               accountId,
             },
           });
         });
-        console.log('TransactionStore initialized');
+      });
+
+      //
+      // When account changes, reset dashbaord and retrigger filter effect
+      //
+      effect(() => {
+        const accountId = accountService.currentAccount()?.id;
+        untracked(() => {
+          patchState(store, {
+            filter: { ...store.filter(), accountId },
+            dashboard: { ...store.dashboard(), isInitialized: false },
+          });
+        });
+      });
+
+      effect(() => {
+        const state = getState(store);
       });
     },
   }))

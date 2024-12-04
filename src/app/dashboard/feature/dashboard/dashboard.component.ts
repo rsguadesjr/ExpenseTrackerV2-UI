@@ -35,6 +35,7 @@ import { DashboardCategorySummaryComponent } from '../../ui/dashboard-category-s
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
 import { DashboardService } from '../../services/dashboard.service';
+import { TransactionStore } from '../../../transaction/data-access/transaction.store';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -56,13 +57,14 @@ import { DashboardService } from '../../services/dashboard.service';
 })
 export class DashboardComponent {
   // dashboardService = inject(DashboardService);
-  transctionService = inject(TransactionService);
+  // transctionService = inject(TransactionService);
   accountService = inject(AccountService);
   categoryService = inject(CategoryService);
   router = inject(Router);
+  transactionStore = inject(TransactionStore);
 
   currentAccount = this.accountService.currentAccount;
-  transactions = this.transctionService.transactions;
+  transactions = computed(() => this.transactionStore.dashboard().transactions);
   categories = this.categoryService.categories;
 
   date = signal(new Date());
