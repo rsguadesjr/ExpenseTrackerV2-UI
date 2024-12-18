@@ -7,73 +7,49 @@ export const routes: Routes = [
     path: 'dashboard',
     data: { title: 'dashboard' },
     canActivate: [authGuard],
-    loadComponent: () =>
-      import('./dashboard/feature/dashboard/dashboard.component').then(
-        (m) => m.DashboardComponent
-      ),
+    loadComponent: () => import('./transaction/feature/dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
   {
     path: 'login',
     data: { title: 'login' },
     canActivate: [authLoggedInGuard],
-    loadComponent: () =>
-      import('./auth/feature/login/login.component').then(
-        (m) => m.LoginComponent
-      ),
+    loadComponent: () => import('./auth/feature/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'register',
     data: { title: 'register' },
     canActivate: [authLoggedInGuard],
-    loadComponent: () =>
-      import('./auth/feature/register/register.component').then(
-        (m) => m.RegisterComponent
-      ),
+    loadComponent: () => import('./auth/feature/register/register.component').then((m) => m.RegisterComponent),
   },
   {
     path: 'forgot-password',
     data: { title: 'forgot-password' },
     canActivate: [authLoggedInGuard],
-    loadComponent: () =>
-      import('./auth/feature/forgot-password/forgot-password.component').then(
-        (m) => m.ForgotPasswordComponent
-      ),
+    loadComponent: () => import('./auth/feature/forgot-password/forgot-password.component').then((m) => m.ForgotPasswordComponent),
   },
   {
     path: 'email-verification',
     data: { title: 'email-verification' },
     canActivate: [authLoggedInGuard],
-    loadComponent: () =>
-      import(
-        './auth/feature/email-verification/email-verification.component'
-      ).then((m) => m.EmailVerificationComponent),
+    loadComponent: () => import('./auth/feature/email-verification/email-verification.component').then((m) => m.EmailVerificationComponent),
   },
   {
     path: 'transactions',
     data: { title: 'transactions' },
     canActivate: [authGuard],
-    loadChildren: () =>
-      import(
-        './transaction/feature/transaction-shell/transaction-shell-routing.module'
-      ).then((m) => m.TransactionShellRoutingModule),
+    loadChildren: () => import('./transaction/feature/transaction-shell/transaction-shell-routing.module').then((m) => m.TransactionShellRoutingModule),
   },
   {
     path: 'accounts',
     data: { title: 'accounts' },
     canActivate: [authGuard],
-    loadChildren: () =>
-      import('./account/feature/account-shell/account-shell.module').then(
-        (m) => m.AccountShellModule
-      ),
+    loadChildren: () => import('./account/feature/account-shell/account-shell.module').then((m) => m.AccountShellModule),
   },
   {
     path: 'categories',
     data: { title: 'categories' },
     canActivate: [authGuard],
-    loadChildren: () =>
-      import('./category/feature/category-shell/category-shell.module').then(
-        (m) => m.CategoryShellModule
-      ),
+    loadChildren: () => import('./category/feature/category-shell/category-shell.module').then((m) => m.CategoryShellModule),
   },
 
   { path: '**', redirectTo: 'dashboard' },

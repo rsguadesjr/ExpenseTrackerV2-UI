@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TransactionResponse } from '../../../transaction/models/transaction-response.mode';
+import { TransactionResponse } from '../../models/transaction-response.mode';
 import { TagModule } from 'primeng/tag';
 
 @Component({

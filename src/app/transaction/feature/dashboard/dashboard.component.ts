@@ -1,6 +1,6 @@
 import { afterNextRender, AfterRenderPhase, Component, computed, inject, signal } from '@angular/core';
 import { MenuModule } from 'primeng/menu';
-import { TransactionService } from '../../../transaction/data-access/transaction.service';
+import { TransactionService } from '../../data-access/transaction.service';
 import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
 import { combineLatest, debounceTime, forkJoin, from, map, of, take, withLatestFrom } from 'rxjs';
@@ -18,8 +18,7 @@ import { DashboardTransactionListComponent } from '../../ui/dashboard-transactio
 import { DashboardCategorySummaryComponent } from '../../ui/dashboard-category-summary/dashboard-category-summary.component';
 import { MenuItem } from 'primeng/api';
 import { Router } from '@angular/router';
-import { DashboardService } from '../../services/dashboard.service';
-import { TransactionStore } from '../../../transaction/data-access/transaction.store';
+import { TransactionStore } from '../../data-access/transaction.store';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
