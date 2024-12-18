@@ -1,6 +1,6 @@
-export interface TrasactionQuery {
+export interface FilterTrasactionQuery {
   year: number;
-  month?: number;
+  month: number;
   timezoneOffset: number;
   accountId?: string;
 }

@@ -1,25 +1,9 @@
-import {
-  afterNextRender,
-  AfterRenderPhase,
-  Component,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { afterNextRender, AfterRenderPhase, Component, computed, inject, signal } from '@angular/core';
 import { MenuModule } from 'primeng/menu';
 import { TransactionService } from '../../../transaction/data-access/transaction.service';
 import { CommonModule } from '@angular/common';
 import { CalendarModule } from 'primeng/calendar';
-import {
-  combineLatest,
-  debounceTime,
-  forkJoin,
-  from,
-  map,
-  of,
-  take,
-  withLatestFrom,
-} from 'rxjs';
+import { combineLatest, debounceTime, forkJoin, from, map, of, take, withLatestFrom } from 'rxjs';
 import { TagModule } from 'primeng/tag';
 import { AccountService } from '../../../account/data-access/account.service';
 import { endOfMonth, getDaysInMonth, isSameDay, startOfMonth } from 'date-fns';
@@ -39,25 +23,11 @@ import { TransactionStore } from '../../../transaction/data-access/transaction.s
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MenuModule,
-    CalendarModule,
-    TagModule,
-    ChartModule,
-    ProgressBarModule,
-    TableModule,
-    ToggleButtonModule,
-    DashboardTransactionListComponent,
-    DashboardCategorySummaryComponent,
-  ],
+  imports: [CommonModule, FormsModule, MenuModule, CalendarModule, TagModule, ChartModule, ProgressBarModule, TableModule, ToggleButtonModule, DashboardTransactionListComponent, DashboardCategorySummaryComponent],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent {
-  // dashboardService = inject(DashboardService);
-  // transctionService = inject(TransactionService);
   accountService = inject(AccountService);
   categoryService = inject(CategoryService);
   router = inject(Router);
@@ -76,12 +46,11 @@ export class DashboardComponent {
       start: startOfMonth(_date),
       end: endOfMonth(_date),
       daysInMonth: daysInMonth,
-      daysInMonthArray: Array.from(
-        { length: daysInMonth },
-        (_, index) => new Date(_date.getFullYear(), _date.getMonth(), index + 1)
-      ),
+      daysInMonthArray: Array.from({ length: daysInMonth }, (_, index) => new Date(_date.getFullYear(), _date.getMonth(), index + 1)),
     };
   });
+
+  constructor() {}
 
   // transactions for the month
   dailyTransactionData = computed(() => {
@@ -89,14 +58,9 @@ export class DashboardComponent {
     const daysInMonthArray = this.dateParams().daysInMonthArray;
 
     return daysInMonthArray.map((date) => {
-      const transactions = allUserTransactions.filter((transaction) =>
-        isSameDay(date, new Date(transaction.transactionDate))
-      );
+      const transactions = allUserTransactions.filter((transaction) => isSameDay(date, new Date(transaction.transactionDate)));
 
-      const totalAmount = transactions.reduce(
-        (acc, curr) => acc + curr.amount,
-        0
-      );
+      const totalAmount = transactions.reduce((acc, curr) => acc + curr.amount, 0);
 
       return {
         date,
@@ -114,16 +78,12 @@ export class DashboardComponent {
   );
 
   // transaction summary
-  totalTransactionAmount = computed(() =>
-    this.dailyTransactionData().reduce((acc, curr) => acc + curr.totalAmount, 0)
-  );
+  totalTransactionAmount = computed(() => this.dailyTransactionData().reduce((acc, curr) => acc + curr.totalAmount, 0));
 
   recentTransactions = computed(() => this.monthlyTransactions().slice(0, 5));
 
   topTransactions = computed(() => {
-    return [...this.monthlyTransactions()]
-      .sort((a, b) => b.amount - a.amount)
-      .slice(0, 5);
+    return [...this.monthlyTransactions()].sort((a, b) => b.amount - a.amount).slice(0, 5);
   });
 
   highestDailyTransaction = computed(() => {
@@ -132,9 +92,7 @@ export class DashboardComponent {
       return null;
     }
 
-    return [...dailyTransactionData].sort(
-      (a, b) => b.totalAmount - a.totalAmount
-    )[0];
+    return [...dailyTransactionData].sort((a, b) => b.totalAmount - a.totalAmount)[0];
   });
 
   categorizedData = computed(() => {
@@ -142,18 +100,12 @@ export class DashboardComponent {
     const transactions = this.monthlyTransactions();
     let categories = this.categories().map((x) => ({ id: x.id, name: x.name }));
 
-    if (
-      transactions.find(
-        (t) => categories.findIndex((c) => c.id === t.category?.id) === -1
-      )
-    ) {
+    if (transactions.find((t) => categories.findIndex((c) => c.id === t.category?.id) === -1)) {
       categories = [...categories, { id: null!, name: 'Uncategorized' }];
     }
 
     const result = categories.map((category) => {
-      const amount = transactions
-        .filter((x) => x.category?.id === category.id)
-        .reduce((acc, curr) => acc + curr.amount, 0);
+      const amount = transactions.filter((x) => x.category?.id === category.id).reduce((acc, curr) => acc + curr.amount, 0);
 
       return {
         ...category,
@@ -186,15 +138,9 @@ export class DashboardComponent {
 
   // Chart data
   documentStyle = signal(getComputedStyle(document.documentElement));
-  textColor = computed(() =>
-    this.documentStyle().getPropertyValue('--text-color')
-  );
-  textColorSecondary = computed(() =>
-    this.documentStyle().getPropertyValue('--text-color-secondary')
-  );
-  surfaceBorder = computed(() =>
-    this.documentStyle().getPropertyValue('--surface-border')
-  );
+  textColor = computed(() => this.documentStyle().getPropertyValue('--text-color'));
+  textColorSecondary = computed(() => this.documentStyle().getPropertyValue('--text-color-secondary'));
+  surfaceBorder = computed(() => this.documentStyle().getPropertyValue('--surface-border'));
 
   chartData = computed(() => {
     const dailyTransactionData = this.dailyTransactionData();

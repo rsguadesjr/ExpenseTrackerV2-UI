@@ -4,4 +4,5 @@ export enum TransactionActionType {
   CreateTransaction = 'CreateTransaction',
   UpdateTransaction = 'UpdateTransaction',
   DeleteTransaction = 'DeleteTransaction',
+  LoadDashboardTransactions = 'loadDashboardTransactions',
 }

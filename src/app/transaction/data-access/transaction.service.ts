@@ -1,7 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { TrasactionQuery } from '../models/transaction-query.model';
+import { FilterTrasactionQuery } from '../models/filter-transaction-query.model';
 import { BehaviorSubject, take } from 'rxjs';
 import { TransactionState } from '../models/transaction-state.mode';
 import { StatusType } from '../../core/constants/status-type';
@@ -37,14 +37,10 @@ export class TransactionService {
     } as unknown as TransactionState);
   }
 
-  loadTransactions(query: TrasactionQuery, skipGlobalErrorHandling = false) {
+  loadTransactions(query: FilterTrasactionQuery, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .get<TransactionResponse[]>(
-        this.baseUrl,
-        { ...query },
-        skipGlobalErrorHandling
-      )
+      .get<TransactionResponse[]>(this.baseUrl, { ...query }, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
@@ -66,18 +62,12 @@ export class TransactionService {
   loadTransactionById(id: string, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .get<TransactionResponse>(
-        `${this.baseUrl}/${id}`,
-        {},
-        skipGlobalErrorHandling
-      )
+      .get<TransactionResponse>(`${this.baseUrl}/${id}`, {}, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           this._state.update((state) => {
-            const index = state.transactions.findIndex(
-              (x) => x.id === response.id
-            );
+            const index = state.transactions.findIndex((x) => x.id === response.id);
             state.transactions[index] = response;
             return {
               ...state,
@@ -95,10 +85,7 @@ export class TransactionService {
       });
   }
 
-  createTransaction(
-    request: TransactionRequest,
-    skipGlobalErrorHandling = false
-  ) {
+  createTransaction(request: TransactionRequest, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
       .post<TransactionResponse>(this.baseUrl, request, skipGlobalErrorHandling)
@@ -121,24 +108,15 @@ export class TransactionService {
       });
   }
 
-  updateTransaction(
-    request: TransactionRequest,
-    skipGlobalErrorHandling = false
-  ) {
+  updateTransaction(request: TransactionRequest, skipGlobalErrorHandling = false) {
     this.updateStatus(StatusType.Loading);
     this.http
-      .put<TransactionResponse>(
-        `${this.baseUrl}/${request.id}`,
-        request,
-        skipGlobalErrorHandling
-      )
+      .put<TransactionResponse>(`${this.baseUrl}/${request.id}`, request, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: (response) => {
           this._state.update((state) => {
-            const index = state.transactions.findIndex(
-              (x) => x.id === response.id
-            );
+            const index = state.transactions.findIndex((x) => x.id === response.id);
             state.transactions[index] = response;
             return {
               ...state,
@@ -158,10 +136,7 @@ export class TransactionService {
 
   deleteTransaction(id: string, skipGlobalErrorHandling = false) {
     this.http
-      .delete<TransactionResponse>(
-        `${this.baseUrl}/${id}`,
-        skipGlobalErrorHandling
-      )
+      .delete<TransactionResponse>(`${this.baseUrl}/${id}`, skipGlobalErrorHandling)
       .pipe(take(1))
       .subscribe({
         next: () => {
@@ -180,10 +155,7 @@ export class TransactionService {
       });
   }
 
-  setEditMode(
-    editMode: 'create' | 'update',
-    transaction?: TransactionResponse
-  ) {
+  setEditMode(editMode: 'create' | 'update', transaction?: TransactionResponse) {
     this._state.update((state) => ({
       ...state,
       editMode,

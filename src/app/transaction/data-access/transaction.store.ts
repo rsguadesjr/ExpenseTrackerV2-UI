@@ -1,13 +1,4 @@
-import {
-  getState,
-  patchState,
-  signalStore,
-  StateSignals,
-  withComputed,
-  withHooks,
-  withMethods,
-  withState,
-} from '@ngrx/signals';
+import { getState, patchState, signalStore, StateSignals, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
 import { TransactionResponse } from '../models/transaction-response.mode';
 import { TransactionState } from '../models/transaction-state.mode';
 import { StatusType } from '../../core/constants/status-type';
@@ -20,7 +11,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { parseError } from '../../core/helpers/error-helper';
 import { TransactionActionType } from '../constants/transaction-action-type';
 import { environment } from '../../../environments/environment';
-import { TrasactionQuery } from '../models/transaction-query.model';
+import { FilterTrasactionQuery } from '../models/filter-transaction-query.model';
 import { HttpClientService } from '../../core/services/http-client.service';
 import { AccountService } from '../../account/data-access/account.service';
 import { Message } from 'primeng/api';
@@ -68,18 +59,11 @@ export const TransactionStore = signalStore(
       if (!store.errors || !store.errors()) {
         return [];
       }
-      return store
-        .errors()!
-        .map(
-          (error) => ({ severity: StatusType.Error, detail: error } as Message)
-        );
+      return store.errors()!.map((error) => ({ severity: StatusType.Error, detail: error } as Message));
     }),
   })),
   withMethods((store, httpClient = inject(HttpClientService)) => ({
-    setEditMode: (
-      editMode: 'create' | 'update',
-      transaction?: TransactionResponse
-    ) => {
+    setEditMode: (editMode: 'create' | 'update', transaction?: TransactionResponse) => {
       patchState(store, {
         editMode,
         selectedTransaction: transaction,
@@ -101,7 +85,7 @@ export const TransactionStore = signalStore(
     },
 
     loadTransactions: rxMethod<{
-      query: TrasactionQuery;
+      query: FilterTrasactionQuery;
       skipGlobalErrorHandling?: boolean;
     }>(
       pipe(
@@ -109,26 +93,20 @@ export const TransactionStore = signalStore(
           showLoading(store, TransactionActionType.LoadTransactions);
         }),
         switchMap(({ query, skipGlobalErrorHandling }) =>
-          httpClient
-            .get<TransactionResponse[]>(
-              baseUrl,
-              { ...query },
-              skipGlobalErrorHandling ?? false
-            )
-            .pipe(
-              tapResponse({
-                next: (response) => {
-                  patchState(store, {
-                    transactions: response,
-                    status: StatusType.Success,
-                    action: TransactionActionType.LoadTransactions,
-                  });
-                },
-                error: (error: HttpErrorResponse) => {
-                  showError(store, error);
-                },
-              })
-            )
+          httpClient.get<TransactionResponse[]>(baseUrl, { ...query }, skipGlobalErrorHandling ?? false).pipe(
+            tapResponse({
+              next: (response) => {
+                patchState(store, {
+                  transactions: response,
+                  status: StatusType.Success,
+                  action: TransactionActionType.LoadTransactions,
+                });
+              },
+              error: (error: HttpErrorResponse) => {
+                showError(store, error);
+              },
+            })
+          )
         )
       )
     ),
@@ -142,25 +120,20 @@ export const TransactionStore = signalStore(
           showLoading(store, TransactionActionType.LoadTransactionById);
         }),
         switchMap(({ id, skipGlobalErrorHandling }) =>
-          httpClient
-            .get<TransactionResponse>(
-              `${baseUrl}/${id}`,
-              skipGlobalErrorHandling
-            )
-            .pipe(
-              tapResponse({
-                next: (response) => {
-                  patchState(store, {
-                    selectedTransaction: response,
-                    status: StatusType.Success,
-                    action: TransactionActionType.LoadTransactionById,
-                  });
-                },
-                error: (error: HttpErrorResponse) => {
-                  showError(store, error);
-                },
-              })
-            )
+          httpClient.get<TransactionResponse>(`${baseUrl}/${id}`, skipGlobalErrorHandling).pipe(
+            tapResponse({
+              next: (response) => {
+                patchState(store, {
+                  selectedTransaction: response,
+                  status: StatusType.Success,
+                  action: TransactionActionType.LoadTransactionById,
+                });
+              },
+              error: (error: HttpErrorResponse) => {
+                showError(store, error);
+              },
+            })
+          )
         )
       )
     ),
@@ -174,27 +147,23 @@ export const TransactionStore = signalStore(
           showLoading(store, TransactionActionType.CreateTransaction);
         }),
         switchMap(({ transaction, skipGlobalErrorHandling }) =>
-          httpClient
-            .post<TransactionResponse>(
-              baseUrl,
-              transaction,
-              skipGlobalErrorHandling
-            )
-            .pipe(
-              tapResponse({
-                next: (response) => {
-                  patchState(store, {
-                    transactions: [response, ...store.transactions()],
-                    status: StatusType.Success,
-                    action: TransactionActionType.CreateTransaction,
-                    selectedTransaction: response,
-                  });
-                },
-                error: (error: HttpErrorResponse) => {
-                  showError(store, error);
-                },
-              })
-            )
+          httpClient.post<TransactionResponse>(baseUrl, transaction, skipGlobalErrorHandling).pipe(
+            tapResponse({
+              next: (response) => {
+                const dashboard = updateDashboardTransactions(store as any, response);
+                patchState(store, {
+                  transactions: [response, ...store.transactions()],
+                  status: StatusType.Success,
+                  action: TransactionActionType.CreateTransaction,
+                  selectedTransaction: response,
+                  dashboard,
+                });
+              },
+              error: (error: HttpErrorResponse) => {
+                showError(store, error);
+              },
+            })
+          )
         )
       )
     ),
@@ -208,32 +177,23 @@ export const TransactionStore = signalStore(
           showLoading(store, TransactionActionType.UpdateTransaction);
         }),
         switchMap(({ transaction, skipGlobalErrorHandling }) =>
-          httpClient
-            .put<TransactionResponse>(
-              `${baseUrl}/${transaction.id}`,
-              transaction,
-              skipGlobalErrorHandling
-            )
-            .pipe(
-              tapResponse({
-                next: (response) => {
-                  patchState(store, {
-                    transactions: [
-                      response,
-                      ...store
-                        .transactions()
-                        .filter((x) => x.id !== response.id),
-                    ],
-                    status: StatusType.Success,
-                    action: TransactionActionType.UpdateTransaction,
-                    selectedTransaction: response,
-                  });
-                },
-                error: (error: HttpErrorResponse) => {
-                  showError(store, error);
-                },
-              })
-            )
+          httpClient.put<TransactionResponse>(`${baseUrl}/${transaction.id}`, transaction, skipGlobalErrorHandling).pipe(
+            tapResponse({
+              next: (response) => {
+                const dashboard = updateDashboardTransactions(store as any, response);
+                patchState(store, {
+                  transactions: [response, ...store.transactions().filter((x) => x.id !== response.id)],
+                  status: StatusType.Success,
+                  action: TransactionActionType.UpdateTransaction,
+                  selectedTransaction: response,
+                  dashboard,
+                });
+              },
+              error: (error: HttpErrorResponse) => {
+                showError(store, error);
+              },
+            })
+          )
         )
       )
     ),
@@ -247,143 +207,69 @@ export const TransactionStore = signalStore(
           showLoading(store, TransactionActionType.DeleteTransaction);
         }),
         switchMap(({ id, skipGlobalErrorHandling }) =>
-          httpClient
-            .delete<TransactionResponse>(
-              `${baseUrl}/${id}`,
-              skipGlobalErrorHandling
-            )
-            .pipe(
-              tapResponse({
-                next: () => {
-                  patchState(store, {
-                    transactions: store
-                      .transactions()
-                      .filter((x) => x.id !== id),
-                    status: StatusType.Success,
-                    action: TransactionActionType.DeleteTransaction,
-                  });
-                },
-                error: (error: HttpErrorResponse) => {
-                  showError(store, error);
-                },
-              })
-            )
+          httpClient.delete<TransactionResponse>(`${baseUrl}/${id}`, skipGlobalErrorHandling).pipe(
+            tapResponse({
+              next: () => {
+                patchState(store, {
+                  transactions: store.transactions().filter((x) => x.id !== id),
+                  status: StatusType.Success,
+                  action: TransactionActionType.DeleteTransaction,
+                  dashboard: { ...store.dashboard(), transactions: store.dashboard().transactions.filter((x) => x.id !== id) },
+                });
+              },
+              error: (error: HttpErrorResponse) => {
+                showError(store, error);
+              },
+            })
+          )
         )
       )
     ),
 
-    // methods for dashboard transactions
-    setDashboardTransactions: (transactions: TransactionResponse[]) => {
-      const dashboardFilter = store.dashboard().filter;
-      const dashboardTransactions = transactions.filter((x) => {
-        const transactionDate = new Date(x.transactionDate);
-
-        return (
-          dashboardFilter.year === transactionDate.getFullYear() &&
-          dashboardFilter.month === transactionDate.getMonth() &&
-          dashboardFilter.timezoneOffset === transactionDate.getTimezoneOffset()
-        );
-      });
-      console.log('[DEBUG] setDashboardTransactions', {
-        dashboardFilter,
-        dashboardTransactions,
-        transactions,
-      });
-      patchState(store, {
-        dashboard: {
-          ...store.dashboard(),
-          isInitialized: true,
-          transactions: dashboardTransactions,
-        },
-      });
-    },
-
-    updateDashboardTransactions: () => {
-      const selectedTransaction = store.selectedTransaction();
-      if (!selectedTransaction) {
-        return;
-      }
-
-      const dashboard = store.dashboard();
-      const filter = dashboard.filter;
-      const dashboardTransactions = dashboard.transactions;
-      const date = new Date(filter.year, filter.month);
-      if (
-        selectedTransaction &&
-        isSameMonth(selectedTransaction.transactionDate, date)
-      ) {
-        const index = dashboardTransactions?.findIndex(
-          (x) => x.id === selectedTransaction.id
-        );
-        if (index > -1) {
-          dashboardTransactions[index] = selectedTransaction;
-        } else {
-          dashboardTransactions.push(selectedTransaction);
-        }
-        patchState(store, {
-          dashboard: {
-            ...store.dashboard(),
-            transactions: dashboardTransactions,
-          },
-        });
-      }
-    },
+    loadDashboardTransactions: rxMethod<{
+      filter: FilterTrasactionQuery;
+      skipGlobalErrorHandling?: boolean;
+    }>(
+      pipe(
+        tap(() => {
+          showLoading(store, TransactionActionType.LoadDashboardTransactions);
+        }),
+        switchMap(({ filter, skipGlobalErrorHandling }) =>
+          httpClient.get<TransactionResponse[]>(baseUrl, { ...filter }, skipGlobalErrorHandling ?? false).pipe(
+            tapResponse({
+              next: (response) => {
+                const dashboard = store.dashboard();
+                patchState(store, {
+                  dashboard: { ...dashboard, transactions: response },
+                  action: TransactionActionType.LoadDashboardTransactions,
+                });
+              },
+              error: (error: HttpErrorResponse) => {
+                showError(store, error);
+              },
+            })
+          )
+        )
+      )
+    ),
   })),
   withHooks((store) => ({
     onInit: () => {
       const accountService = inject(AccountService);
-
-      // When dashboard is not yet initialized, set dashboard transactions based on transactions
+      // //
+      // // When account changes, reset dashbaord and retrigger filter effect
+      // //
       effect(() => {
-        const status = store.status();
-        if (status !== StatusType.Success) {
-          return;
-        }
-
-        const transactions = store.transactions();
+        const accountId = accountService.currentAccount()?.id;
         untracked(() => {
+          const filter = store.filter();
           const dashboard = store.dashboard();
-          if (!dashboard.isInitialized) {
-            store.setDashboardTransactions(transactions);
-            return;
-          }
-        });
-      });
 
-      //
-      // When UpdateTransaction or CreateTransaction action is successful, update dashboard transactions
-      //
-      effect(() => {
-        const status = store.status();
-        if (status !== StatusType.Success) {
-          return;
-        }
-
-        const action = store.action();
-        if (
-          ![
-            TransactionActionType.UpdateTransaction,
-            TransactionActionType.CreateTransaction,
-          ].includes(action!)
-        ) {
-          return;
-        }
-
-        const selectedTransaction = store.selectedTransaction();
-        if (selectedTransaction) {
-          untracked(() => {
-            store.updateDashboardTransactions();
+          patchState(store, {
+            filter: { ...filter, accountId },
+            dashboard: { ...dashboard, filter: { ...dashboard.filter, accountId } },
           });
-        }
-      });
 
-      //
-      // When filter changes, load transactions
-      //
-      effect(() => {
-        const filter = store.filter();
-        untracked(() => {
-          const accountId = accountService.currentAccount()?.id;
           store.loadTransactions({
             query: {
               year: filter.year,
@@ -392,24 +278,22 @@ export const TransactionStore = signalStore(
               accountId,
             },
           });
-        });
-      });
 
-      //
-      // When account changes, reset dashbaord and retrigger filter effect
-      //
-      effect(() => {
-        const accountId = accountService.currentAccount()?.id;
-        untracked(() => {
-          patchState(store, {
-            filter: { ...store.filter(), accountId },
-            dashboard: { ...store.dashboard(), isInitialized: false },
+          store.loadDashboardTransactions({
+            filter: {
+              year: dashboard.filter.year,
+              month: dashboard.filter.month + 1,
+              timezoneOffset: -dashboard.filter.timezoneOffset,
+              accountId,
+            },
           });
         });
       });
 
+      // console log the current state
       effect(() => {
         const state = getState(store);
+        console.log('[DEBUG] TransactionStore', state);
       });
     },
   }))
@@ -430,4 +314,21 @@ const showError = (store: any, error: HttpErrorResponse) => {
     status: StatusType.Error,
     errors: parseError(error),
   });
+};
+
+const updateDashboardTransactions = (store: TransactionStore, currentTransaction: TransactionResponse) => {
+  const dashboard = store.dashboard();
+  const filter = dashboard.filter;
+  const transactions = dashboard.transactions;
+  const date = new Date(filter.year, filter.month);
+  if (currentTransaction && isSameMonth(currentTransaction.transactionDate, date) && filter.accountId === currentTransaction.accountId) {
+    const index = transactions?.findIndex((x) => x.id === currentTransaction.id);
+    if (index > -1) {
+      transactions[index] = currentTransaction;
+    } else {
+      transactions.push(currentTransaction);
+    }
+  }
+
+  return { ...dashboard, transactions };
 };

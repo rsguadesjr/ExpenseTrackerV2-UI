@@ -1,5 +1,6 @@
 import { StatusType } from '../../core/constants/status-type';
 import { TransactionActionType } from '../constants/transaction-action-type';
+import { FilterTrasactionQuery } from './filter-transaction-query.model';
 import { TransactionResponse } from './transaction-response.mode';
 
 export interface TransactionState {
@@ -15,29 +16,12 @@ export interface TransactionState {
   editMode: 'create' | 'update' | null;
 
   // TODO: this is temporary for now
-  filter: {
-    year: number;
-    month: number;
-    timezoneOffset: number;
-    accountId: string | undefined;
-  };
+  filter: FilterTrasactionQuery;
 
   // for dashboard??
   dashboard: {
     isInitialized: boolean;
     transactions: TransactionResponse[];
-    filter: {
-      year: number;
-      month: number;
-      timezoneOffset: number;
-      accountId: string | undefined;
-    };
+    filter: FilterTrasactionQuery;
   };
-  // dashboardFilter: {
-  //   year: number;
-  //   month: number;
-  //   timezoneOffset: number;
-  //   accountId: string | undefined;
-  // };
-  // dashboardTransactions: TransactionResponse[] | undefined;
 }
