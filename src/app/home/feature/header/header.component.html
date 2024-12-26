@@ -6,7 +6,8 @@
     </a>
   </div>
   <ng-template pTemplate="end">
-
+    <p-button icon="pi pi-plus" [rounded]="true" severity="info" (click)="createTransaction()"
+      pTooltip="Create Transaction" tooltipPosition="left" showDelay="500" hideDelay="300" styleClass="mr-2" />
     <!-- <span class="mr-2"><b>{{ authState.user?.name }}</b></span> -->
     <div class="flex align-items-center gap-2">
       <p-dropdown id="categoryId" [ngModel]="currentAccount()?.id" [options]="accounts()" optionLabel="name"

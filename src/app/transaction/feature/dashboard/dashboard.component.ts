@@ -1,4 +1,4 @@
-import { afterNextRender, AfterRenderPhase, Component, computed, inject, signal } from '@angular/core';
+import { afterNextRender, AfterRenderPhase, Component, computed, effect, inject, signal } from '@angular/core';
 import { MenuModule } from 'primeng/menu';
 import { TransactionService } from '../../data-access/transaction.service';
 import { CommonModule } from '@angular/common';
@@ -22,7 +22,19 @@ import { TransactionStore } from '../../data-access/transaction.store';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, MenuModule, CalendarModule, TagModule, ChartModule, ProgressBarModule, TableModule, ToggleButtonModule, DashboardTransactionListComponent, DashboardCategorySummaryComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MenuModule,
+    CalendarModule,
+    TagModule,
+    ChartModule,
+    ProgressBarModule,
+    TableModule,
+    ToggleButtonModule,
+    DashboardTransactionListComponent,
+    DashboardCategorySummaryComponent,
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
@@ -74,6 +86,8 @@ export class DashboardComponent {
     this.dailyTransactionData()
       .map((x) => x.transactions)
       .flat()
+      // sort by date
+      .sort((a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime())
   );
 
   // transaction summary

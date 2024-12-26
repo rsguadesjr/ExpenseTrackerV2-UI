@@ -291,10 +291,6 @@ export const TransactionStore = signalStore(
       });
 
       // console log the current state
-      effect(() => {
-        const state = getState(store);
-        console.log('[DEBUG] TransactionStore', state);
-      });
     },
   }))
 );
@@ -319,14 +315,19 @@ const showError = (store: any, error: HttpErrorResponse) => {
 const updateDashboardTransactions = (store: TransactionStore, currentTransaction: TransactionResponse) => {
   const dashboard = store.dashboard();
   const filter = dashboard.filter;
-  const transactions = dashboard.transactions;
   const date = new Date(filter.year, filter.month);
+  let transactions = dashboard.transactions;
   if (currentTransaction && isSameMonth(currentTransaction.transactionDate, date) && filter.accountId === currentTransaction.accountId) {
-    const index = transactions?.findIndex((x) => x.id === currentTransaction.id);
-    if (index > -1) {
-      transactions[index] = currentTransaction;
+    const exists = transactions?.some((x) => x.id === currentTransaction.id);
+    if (exists) {
+      transactions = transactions.map((x) => {
+        if (x.id === currentTransaction.id) {
+          return currentTransaction;
+        }
+        return x;
+      });
     } else {
-      transactions.push(currentTransaction);
+      transactions = [currentTransaction, ...transactions];
     }
   }
 

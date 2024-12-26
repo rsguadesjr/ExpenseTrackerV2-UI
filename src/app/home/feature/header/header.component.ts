@@ -16,24 +16,15 @@ import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { TransactionStore } from '../../../transaction/data-access/transaction.store';
+import { TransactionFormComponent } from '../../../transaction/feature/transaction-form/transaction-form.component';
+import { DialogService } from 'primeng/dynamicdialog';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ToolbarModule,
-    ButtonModule,
-    SplitButtonModule,
-    InputTextModule,
-    AvatarModule,
-    RouterModule,
-    DropdownModule,
-    ConfirmDialogModule,
-    ToastModule,
-  ],
-  providers: [ConfirmationService, MessageService],
+  imports: [CommonModule, FormsModule, ToolbarModule, ButtonModule, SplitButtonModule, InputTextModule, AvatarModule, RouterModule, DropdownModule, ConfirmDialogModule, ToastModule],
+  providers: [ConfirmationService, MessageService, DialogService],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
@@ -44,6 +35,8 @@ export class HeaderComponent {
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
   private uiService = inject(UiService);
+  private transactionStore = inject(TransactionStore);
+  private dialogService = inject(DialogService);
 
   accounts = this.accountService.accounts;
   currentAccount = this.accountService.currentAccount;
@@ -80,15 +73,11 @@ export class HeaderComponent {
   }
 
   onAccountChange({ value }: { value: string }) {
-    const selectedAccount = this.accountService
-      .accounts()
-      .find((a) => a.id === value);
+    const selectedAccount = this.accountService.accounts().find((a) => a.id === value);
     this.confirmationService.confirm({
       header: 'Confirmation',
       icon: 'pi pi-exclamation-circle',
-      message: `Are you sure you want to change account to "${
-        selectedAccount!.name
-      }"?`,
+      message: `Are you sure you want to change account to "${selectedAccount!.name}"?`,
       acceptButtonStyleClass: 'p-button-info',
       accept: () => {
         this.accountService.setCurrentAccount(value);
@@ -106,5 +95,14 @@ export class HeaderComponent {
 
   toggleSideBar($event: Event, visible: boolean) {
     this.uiService.toggleSidebar(!visible);
+  }
+
+  createTransaction() {
+    this.transactionStore.setEditMode('create');
+    this.dialogService.open(TransactionFormComponent, {
+      header: 'Create',
+      width: '420px',
+      closeOnEscape: true,
+    });
   }
 }

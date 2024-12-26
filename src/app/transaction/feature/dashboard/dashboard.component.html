@@ -5,9 +5,11 @@
           currentAccount()?.name }}</span>
       </div>
 
-      <div class="flex align-items-center">
-        Showing data for <span class="font-bold text-xl ml-2 text-primary">{{
+      <div class="flex align-items-center gap-2">
+        Showing data fors <span #dateSelectPlaceholder class="font-bold text-xl ml-2 text-primary">{{
           date() | date : 'MMMM yyyy' }}</span>
+        <!-- <p-button icon="pi pi-calendar" [rounded]="true" [text]="true" severity="info" pTooltip="Edit Transaction"
+            tooltipPosition="left" size="small" showDelay="500" hideDelay="300" (click)="calendar.toggle()" /> -->
       </div>
     </div>
   </div>

@@ -1,0 +1,13 @@
+::ng-deep.calendar-icon-only {
+  input {
+    padding: 0;
+    width: 0;
+    outline: none;
+    box-shadow: none;
+    border: none;
+  }
+
+  button {
+    border-radius: 6px;
+  }
+}

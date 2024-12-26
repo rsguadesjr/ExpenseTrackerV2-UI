@@ -1,13 +1,5 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  OnInit,
-  computed,
-  effect,
-  inject,
-  signal,
-  untracked,
-} from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal, untracked } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { TransactionService } from '../../data-access/transaction.service';
 import { TableModule } from 'primeng/table';
@@ -48,11 +40,11 @@ import { TransactionStore } from '../../data-access/transaction.store';
     CalendarModule,
     PanelModule,
     ConfirmDialogModule,
-    TooltipModule,
+    TooltipModule
   ],
   providers: [DialogService, ConfirmationService],
   templateUrl: './transaction-page.component.html',
-  styleUrl: './transaction-page.component.scss',
+  styleUrl: './transaction-page.component.scss'
 })
 export class TransactionPageComponent implements OnInit {
   private dialogService = inject(DialogService);
@@ -65,7 +57,7 @@ export class TransactionPageComponent implements OnInit {
   calendarData = computed(() =>
     this.transactions().map((t) => ({
       date: new Date(t.transactionDate),
-      value: t.amount,
+      value: t.amount
     }))
   );
 
@@ -93,7 +85,7 @@ export class TransactionPageComponent implements OnInit {
     this.transactionStore.setEditMode('update', transaction);
     this.dialogService.open(TransactionFormComponent, {
       header: 'Update',
-      width: '420px',
+      width: '420px'
     });
   }
 
@@ -102,7 +94,7 @@ export class TransactionPageComponent implements OnInit {
     this.dialogService.open(TransactionFormComponent, {
       header: 'Create',
       width: '420px',
-      closeOnEscape: true,
+      closeOnEscape: true
     });
   }
 
@@ -115,14 +107,14 @@ export class TransactionPageComponent implements OnInit {
       accept: () => {
         this.transactionStore.deleteTransaction({ id: transaction.id });
       },
-      reject: () => {},
+      reject: () => {}
     });
   }
 
   onDateFilter(event: { startDate: Date; endDate: Date }) {
     this.transactionStore.setDateRange({
       start: event.startDate,
-      end: event.endDate,
+      end: event.endDate
     });
     // this.dateFilter.set(event);
   }
